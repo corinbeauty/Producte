@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>產品獎金核銷系統-中清店 V3.0</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+        
+        /* 核銷樣式 */
+        .verified-row { background-color: #f0fdf4 !important; }
+        
+        .lock-locked { color: #ef4444; }
+        .lock-unlocked { color: #22c55e; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+        
+        /* 榮譽標誌 */
+        @keyframes crown-flash {
+            0%, 100% { filter: drop-shadow(0 0 2px #fbbf24); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 8px #f59e0b); transform: scale(1.1); }
+        }
+        .crown-animate { animation: crown-flash 1.5s infinite ease-in-out; color: #fbbf24; }
+        .silver-medal { color: #94a3b8; }
+        .bronze-medal { color: #b45309; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-24 font-sans text-slate-900">
+
+    <!-- Header -->
+    <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
+        <div class="flex items-center gap-2">
+            <i data-lucide="shield-check" class="text-blue-600 w-6 h-6"></i>
+            <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統-中清店</h1>
+        </div>
+        <div class="flex gap-2">
+            <!-- 鎖頭解鎖與眼睛隱私 -->
+            <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90">
+                <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
+            </button>
+            <button id="adminToggle" class="p-2 bg-slate-100 rounded-lg text-slate-400 active:text-blue-600">
+                <i data-lucide="eye-off" id="adminIcon" class="w-5 h-5"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-md mx-auto p-4">
+        
+        <!-- Tab: Report (申報頁面) -->
+        <div id="reportView" class="space-y-4 animate-in fade-in">
+            <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-200">
+                <h2 class="text-md font-semibold mb-4 flex items-center gap-2 text-slate-700">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-blue-500"></i> 填寫銷售申報
+                </h2>
+                
+                <form id="salesForm" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">銷售人員</label>
+                        <select id="employee" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 appearance-none" required>
+                            <option value="">選擇人員</option>
+                            <option>栢政權</option><option>莊雅筑</option><option>莊秉豐</option>
+                            <option>黃靖雯</option><option>賴彥廷</option><option>黃詩涵</option>
+                            <option>黃品睿</option><option>劉芸汝</option><option>施孟均</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">銷售日期</label>
+                        <input type="date" id="date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">產品品項</label>
+                        <select id="product" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
+                            <option value="">選擇產品</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">數量</label>
+                        <select id="quantity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
+                            <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                            <option value="4">4</option><option value="5">5</option><option value="10">10</option>
+                        </select>
+                    </div>
+
+                    <div id="calcPreview" class="hidden bg-blue-50 rounded-xl p-4 grid grid-cols-2 gap-4 border border-blue-100">
+                        <div>
+                            <p class="text-[10px] text-blue-600 font-bold uppercase">預計獎金</p>
+                            <p id="prevBonus" class="text-xl font-black text-blue-800">$0</p>
+                        </div>
+                        <div class="admin-only hidden border-l border-blue-200 pl-4">
+                            <p class="text-[10px] text-indigo-600 font-bold uppercase">預計公積金</p>
+                            <p id="prevFund" class="text-xl font-black text-indigo-800">$0</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg active:scale-95 transition-all">
+                        確認提交申報
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tab: Statistics (統計報表) -->
+        <div id="statsView" class="hidden space-y-4 animate-in fade-in">
+            <!-- 日期篩選 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 text-center">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">統計區間篩選</p>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
+                    <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
+                </div>
+            </div>
+
+            <!-- 排行榜 -->
+            <div id="leaderboardSection" class="grid grid-cols-3 gap-2">
+                <!-- JS 動態渲染 -->
+            </div>
+
+            <!-- 人員獎金累計總表 (F 累加) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
+                    <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                        <i data-lucide="users" class="w-4 h-4 text-blue-400"></i> 人員獎金累計總表
+                    </h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[11px]">
+                        <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold">
+                            <tr>
+                                <th class="p-3">銷售人員</th>
+                                <th class="p-3 text-right">獎金累計</th>
+                                <th id="fundHeader" class="p-3 text-right text-indigo-500 admin-only hidden">公積金</th>
+                            </tr>
+                        </thead>
+                        <tbody id="personSummaryBody" class="divide-y divide-slate-100">
+                            <!-- JS 動態渲染 -->
+                        </tbody>
+                        <tbody id="noDataBody" class="bg-slate-50/50 border-t-2 border-slate-100">
+                            <!-- 尚無數據人員 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 銷售趨勢曲線 -->
+            <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">週期銷售趨勢</p>
+                <div class="chart-container">
+                    <canvas id="posChart"></canvas>
+                </div>
+            </div>
+
+            <!-- 週期銷售總表 -->
+            <div class="bg-blue-900 rounded-2xl p-5 text-white shadow-xl shadow-blue-100">
+                <h3 class="text-sm font-bold flex items-center gap-2 mb-4 text-amber-300">
+                    <i data-lucide="layout-list" class="w-4 h-4"></i> 週期銷售總表
+                </h3>
+                <div id="periodSummaryContainer" class="space-y-2 text-[11px]">
+                    <!-- JS 生成 -->
+                </div>
+            </div>
+
+            <div class="px-1 flex justify-between items-end mt-4">
+                <h2 class="font-bold text-slate-700 flex items-center gap-2 text-sm">
+                    <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-500"></i> POS 核對明細
+                </h2>
+                <p id="authStatusLabel" class="text-[10px] text-red-500 font-bold italic">核銷需要權限</p>
+            </div>
+
+            <!-- 核銷列表 -->
+            <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-6">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-[11px]" id="auditTable">
+                        <thead class="bg-slate-50 border-b text-slate-500 font-bold">
+                            <tr>
+                                <th class="p-3 text-center">核</th>
+                                <th class="p-3">人員</th>
+                                <th class="p-3">品項/日期</th>
+                                <th class="p-3 text-right">金額</th>
+                            </tr>
+                        </thead>
+                        <tbody id="auditTableBody" class="divide-y divide-slate-100">
+                            <!-- JS 渲染 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 授權 Modal -->
+    <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl animate-in zoom-in duration-200">
+            <h3 class="text-center font-bold text-slate-800 mb-4 tracking-wider">管理者驗證</h3>
+            <input type="password" id="pwdInput" placeholder="請輸入驗證碼" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500">
+            <div class="flex gap-2">
+                <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-lg text-slate-500 font-bold">取消</button>
+                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold shadow-lg active:scale-95">確認</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
+        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1">
+            <i data-lucide="plus-circle" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold">申報</span>
+        </button>
+        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1">
+            <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
+            <span class="text-[10px] font-bold">報表統計</span>
+        </button>
+    </nav>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+
+        const PRODUCTS = [
+            { id: 1, name: "1瓶 (沁涼/沁舒)", bonus: 25, fund: 30 },
+            { id: 2, name: "5瓶 (沁涼/沁舒)", bonus: 70, fund: 100 },
+            { id: 3, name: "4瓶(沁涼)+1瓶按摩霜", bonus: 70, fund: 100 },
+            { id: 4, name: "2瓶(沁涼)+2瓶沁舒", bonus: 70, fund: 100 },
+            { id: 5, name: "1瓶按摩霜", bonus: 50, fund: 70 },
+            { id: 6, name: "3瓶按摩霜", bonus: 100, fund: 150 },
+            { id: 7, name: "1袋茶 (12入夾鏈)", bonus: 50, fund: 60 },
+            { id: 8, name: "4袋茶 (12入夾鏈)", bonus: 60, fund: 80 },
+            { id: 9, name: "1袋茶 (30入夾鏈)", bonus: 80, fund: 100 },
+            { id: 10, name: "2袋茶 (30入夾鏈)", bonus: 60, fund: 80 },
+            { id: 11, name: "12入茶禮盒 1盒", bonus: 50, fund: 60 },
+            { id: 12, name: "12入茶禮盒 4盒", bonus: 60, fund: 80 },
+            { id: 13, name: "雞湯 買10送2", bonus: 300, fund: 450 },
+            { id: 14, name: "滴雞精 (原味)", bonus: 50, fund: 50 },
+            { id: 15, name: "滴雞精 (膠原)", bonus: 50, fund: 50 },
+            { id: 16, name: "滴雞精 (十全)", bonus: 50, fund: 50 },
+            { id: 17, name: "滴雞精 (綜合禮盒)", bonus: 200, fund: 200 },
+            { id: 18, name: "龜苓膏 6入禮盒", bonus: 100, fund: 120 },
+            { id: 19, name: "龜苓膏 9入禮盒", bonus: 120, fund: 120 }
+        ];
+
+        const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '劉芸汝', '施孟均'];
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sales-granular-v1';
+
+        let isAdmin = false;
+        let isUnlocked = false;
+        let rawData = [];
+        let posChart = null;
+
+        // --- 初始化日期設定 ---
+        const initFormAndDates = () => {
+            const prodSelect = document.getElementById('product');
+            prodSelect.innerHTML = '<option value="">選擇產品</option>';
+            PRODUCTS.forEach(p => {
+                const opt = document.createElement('option');
+                opt.value = p.id;
+                opt.textContent = `${p.name} ($${p.bonus})`;
+                prodSelect.appendChild(opt);
+            });
+
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const today = now.toISOString().split('T')[0];
+
+            document.getElementById('date').value = today;
+            document.getElementById('filterStart').value = firstDayOfMonth;
+            document.getElementById('filterEnd').value = today;
+        };
+
+        const startApp = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+            onAuthStateChanged(auth, (user) => { if (user) loadData(); });
+        };
+
+        const loadData = () => {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
+            onSnapshot(q, (snapshot) => {
+                rawData = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
+                // 提交後更新緩存，如果正在統計頁，立即刷新 UI
+                const isStatsActive = !document.getElementById('statsView').classList.contains('hidden');
+                if (isStatsActive) {
+                    processAndRender();
+                }
+            }, (err) => console.error("Firebase Error:", err));
+        };
+
+        window.processAndRender = () => {
+            const start = document.getElementById('filterStart').value;
+            const end = document.getElementById('filterEnd').value;
+            
+            const filtered = rawData.filter(e => (!start || !end) ? true : (e.date >= start && e.date <= end));
+            const validData = filtered.filter(e => !e.deleted);
+
+            renderLeaderboard(validData);
+            renderPeriodSummary(validData);
+            renderPersonSummary(validData); 
+            renderAuditTable(filtered.sort((a,b) => b.ts - a.ts)); 
+
+            const chartCanvas = document.getElementById('posChart');
+            if (chartCanvas && chartCanvas.offsetParent !== null) {
+                renderPosChart(validData, start, end);
+            }
+            
+            // 處理標題與公積金字眼的顯示機制
+            updateAdminUIElements();
+        };
+
+        const renderPersonSummary = (data) => {
+            const activeBody = document.getElementById('personSummaryBody');
+            const inactiveBody = document.getElementById('noDataBody');
+            activeBody.innerHTML = '';
+            inactiveBody.innerHTML = '';
+            
+            const empStats = {};
+            EMPLOYEES.forEach(name => empStats[name] = { bonus: 0, fund: 0, hasData: false });
+            
+            data.forEach(d => {
+                let name = d.emp;
+                if (name === '葉詩涵') name = '黃詩涵';
+                if (name === '黃晴雯') name = '黃靖雯';
+                if (empStats.hasOwnProperty(name)) {
+                    empStats[name].bonus += d.bonus;
+                    empStats[name].fund += d.fund;
+                    empStats[name].hasData = true;
+                }
+            });
+
+            const sorted = Object.entries(empStats).sort((a, b) => b[1].bonus - a[1].bonus);
+            
+            sorted.forEach(([name, val]) => {
+                if (val.hasData && val.bonus > 0) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-slate-700">${name}</td>
+                        <td class="p-3 text-right font-black text-blue-600">$${val.bonus.toLocaleString()}</td>
+                        <td class="p-3 text-right font-bold text-indigo-500 admin-only ${isAdmin ? '' : 'hidden'}">$${val.fund.toLocaleString()}</td>
+                    `;
+                    activeBody.appendChild(tr);
+                } else {
+                    const tr = document.createElement('tr');
+                    tr.className = "opacity-30 grayscale";
+                    tr.innerHTML = `
+                        <td class="p-3 font-medium text-slate-400 italic">${name}</td>
+                        <td class="p-3 text-right text-[10px] text-slate-300 font-bold">尚無業績</td>
+                        <td class="p-3 text-right text-slate-300 admin-only ${isAdmin ? '' : 'hidden'}">$0</td>
+                    `;
+                    inactiveBody.appendChild(tr);
+                }
+            });
+        };
+
+        const renderLeaderboard = (data) => {
+            const container = document.getElementById('leaderboardSection');
+            container.innerHTML = '';
+            const empBonus = {};
+            EMPLOYEES.forEach(name => empBonus[name] = 0);
+            data.forEach(d => {
+                let name = d.emp;
+                if (name === '葉詩涵') name = '黃詩涵';
+                if (name === '黃晴雯') name = '黃靖雯';
+                if (empBonus.hasOwnProperty(name)) empBonus[name] += d.bonus;
+            });
+            const sorted = Object.entries(empBonus).sort((a, b) => b[1] - a[1]);
+            [1, 0, 2].forEach(idx => {
+                const item = sorted[idx];
+                if (!item || item[1] === 0) {
+                    container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] flex items-center justify-center italic">從缺</div>`;
+                    return;
+                }
+                const [name, bonus] = item;
+                let cardStyle = "bg-white", icon = '', label = '';
+                if (idx === 0) {
+                    cardStyle = "bg-amber-50 border-amber-200 -mt-2 shadow-lg scale-110 z-20";
+                    icon = '<i data-lucide="crown" class="w-6 h-6 crown-animate mx-auto mb-1"></i>';
+                    label = "第一名";
+                } else if (idx === 1) {
+                    cardStyle = "bg-slate-50 border-slate-200 z-10";
+                    icon = '<i data-lucide="medal" class="w-5 h-5 silver-medal mx-auto mb-1"></i>';
+                    label = "第二名";
+                } else {
+                    cardStyle = "bg-orange-50 border-orange-100 z-10";
+                    icon = '<i data-lucide="medal" class="w-5 h-5 bronze-medal mx-auto mb-1"></i>';
+                    label = "第三名";
+                }
+                container.innerHTML += `<div class="${cardStyle} p-2 rounded-xl border text-center relative overflow-hidden transition-all"><div class="text-[9px] font-bold text-slate-400 mb-1">${label}</div>${icon}<div class="text-xs font-black text-slate-800 truncate">${name}</div><div class="text-[10px] font-bold text-blue-600 mt-1">$${bonus.toLocaleString()}</div></div>`;
+            });
+            lucide.createIcons();
+        };
+
+        const renderPosChart = (data, start, end) => {
+            const ctx = document.getElementById('posChart').getContext('2d');
+            if (posChart) posChart.destroy();
+            const dateLabels = [];
+            let curr = new Date(start);
+            const stop = new Date(end);
+            while(curr <= stop) {
+                dateLabels.push(curr.toISOString().split('T')[0]);
+                curr.setDate(curr.getDate() + 1);
+            }
+            const amountMap = {};
+            data.forEach(d => amountMap[d.date] = (amountMap[d.date] || 0) + d.bonus);
+            const values = dateLabels.map(d => amountMap[d] || 0);
+            posChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dateLabels.map(d => d.slice(5)),
+                    datasets: [{
+                        label: '獎金', data: values, borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                        borderWidth: 2, pointRadius: 2, fill: true, tension: 0.4
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } }
+            });
+        };
+
+        const renderPeriodSummary = (data) => {
+            const container = document.getElementById('periodSummaryContainer');
+            const summary = data.reduce((acc, curr) => {
+                if (!acc[curr.prodName]) acc[curr.prodName] = { qty: 0, bonus: 0 };
+                acc[curr.prodName].qty += curr.qty;
+                acc[curr.prodName].bonus += curr.bonus;
+                return acc;
+            }, {});
+            const entries = Object.entries(summary).sort((a,b) => b[1].qty - a[1].qty);
+            if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">此區間無銷售數據</p>`; return; }
+            container.innerHTML = entries.map(([name, val]) => `
+                <div class="flex justify-between items-center py-2 border-b border-blue-800/40">
+                    <div class="flex-1 font-medium">${name}</div>
+                    <div class="flex gap-3 items-center">
+                        <span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${val.qty}</span>
+                        <span class="text-blue-200 font-bold w-14 text-right">$${val.bonus.toLocaleString()}</span>
+                    </div>
+                </div>
+            `).join('');
+            const totalQty = data.reduce((s, c) => s + c.qty, 0);
+            const totalBonus = data.reduce((s, c) => s + c.bonus, 0);
+            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計</div><div class="flex gap-4"><span>${totalQty} 件</span><span>$${totalBonus.toLocaleString()}</span></div></div>`;
+        };
+
+        const renderAuditTable = (data) => {
+            const body = document.getElementById('auditTableBody');
+            body.innerHTML = '';
+            data.forEach(item => {
+                const tr = document.createElement('tr');
+                const isDeleted = item.deleted === true;
+                const isVerified = item.verified === true && !isDeleted;
+                if (isVerified) tr.className = "verified-row";
+                if (isDeleted) tr.className = "deleted-row";
+                
+                tr.innerHTML = `
+                    <td class="p-3 text-center">
+                        <input type="checkbox" ${isVerified ? 'checked' : ''} ${isUnlocked && !isDeleted ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                    </td>
+                    <td class="p-3">
+                        <div class="font-bold text-slate-700">${item.emp}</div>
+                    </td>
+                    <td class="p-3">
+                        <div class="text-[9px] font-mono text-slate-400 mb-1">${item.date}</div>
+                        <div class="text-[11px] leading-tight">${item.prodName}</div>
+                        ${isDeleted ? '<div class="text-[9px] font-black text-red-600 mt-1 uppercase">輸入錯誤刪除</div>' : ''}
+                        <div class="text-[10px] font-bold text-blue-500 mt-1">x${item.qty}</div>
+                    </td>
+                    <td class="p-3 text-right font-bold">$${item.bonus.toLocaleString()}</td>
+                `;
+                body.appendChild(tr);
+            });
+            lucide.createIcons();
+        };
+
+        // --- 全域函數 ---
+        window.closePwdModal = () => { document.getElementById('pwdModal').classList.add('hidden'); document.getElementById('pwdInput').value = ''; };
+        
+        window.verifyPwd = () => {
+            if (document.getElementById('pwdInput').value === '1016') {
+                isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender();
+            } else { alert("驗證碼錯誤"); document.getElementById('pwdInput').value = ''; }
+        };
+        document.getElementById('verifyBtn').onclick = window.verifyPwd;
+
+        window.toggleVerify = async (docId, status) => {
+            if (!isUnlocked) return;
+            try { const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', docId); await updateDoc(docRef, { verified: status }); } catch (err) { console.error(err); }
+        };
+
+        window.switchTab = (tab) => {
+            const r = document.getElementById('reportView'), s = document.getElementById('statsView');
+            const br = document.getElementById('btnReport'), bs = document.getElementById('btnStats');
+            if (tab === 'report') {
+                r.classList.remove('hidden'); s.classList.add('hidden');
+                br.classList.add('tab-active'); br.classList.remove('text-slate-400');
+                bs.classList.remove('tab-active'); bs.classList.add('text-slate-400');
+            } else {
+                r.classList.add('hidden'); s.classList.remove('hidden');
+                bs.classList.add('tab-active'); bs.classList.remove('text-slate-400');
+                br.classList.remove('tab-active'); br.classList.add('text-slate-400');
+                processAndRender();
+            }
+        };
+
+        // 核心修復：強制更新所有 Admin 相關 UI 的字眼與顯示
+        function updateAdminUIElements() {
+            const adminIcon = document.getElementById('adminIcon');
+            const adminCells = document.querySelectorAll('.admin-only');
+            const fundHeader = document.getElementById('fundHeader');
+            
+            if (isAdmin) {
+                adminIcon.setAttribute('data-lucide', 'eye');
+                adminCells.forEach(c => c.classList.remove('hidden'));
+                if(fundHeader) fundHeader.classList.remove('hidden');
+            } else {
+                adminIcon.setAttribute('data-lucide', 'eye-off');
+                adminCells.forEach(c => c.classList.add('hidden'));
+                if(fundHeader) fundHeader.classList.add('hidden');
+            }
+            lucide.createIcons();
+        }
+
+        function updateLockUI() {
+            const icon = document.getElementById('lockIcon'), label = document.getElementById('authStatusLabel');
+            if (isUnlocked) {
+                icon.setAttribute('data-lucide', 'unlock'); icon.classList.replace('lock-locked', 'lock-unlocked');
+                label.textContent = "驗證授權已通過"; label.classList.replace('text-red-500', 'text-green-600');
+            } else {
+                icon.setAttribute('data-lucide', 'lock'); icon.classList.replace('lock-unlocked', 'lock-locked');
+                label.textContent = "核銷需要權限"; label.classList.replace('text-green-600', 'text-red-500');
+            }
+            lucide.createIcons();
+        }
+
+        document.getElementById('authBtn').onclick = () => {
+            if (isUnlocked) { isUnlocked = false; updateLockUI(); processAndRender(); }
+            else { document.getElementById('pwdModal').classList.remove('hidden'); document.getElementById('pwdInput').focus(); }
+        };
+
+        document.getElementById('adminToggle').onclick = () => {
+            isAdmin = !isAdmin;
+            processAndRender(); // 觸發完整重繪與欄位檢查
+        };
+
+        document.getElementById('salesForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const pid = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
+            const p = PRODUCTS.find(x => x.id === pid), btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerHTML = `資料傳送中...`;
+            try { 
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { 
+                    emp: document.getElementById('employee').value, date: document.getElementById('date').value, 
+                    prodId: pid, prodName: p.name, qty: qty, bonus: p.bonus * qty, 
+                    fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false 
+                }); 
+                alert("銷售申報成功！"); 
+                document.getElementById('product').value = ""; 
+                document.getElementById('calcPreview').classList.add('hidden'); 
+            } catch (err) { alert("系統繁忙，請稍後再試"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+        };
+
+        document.getElementById('product').onchange = updatePreview;
+        document.getElementById('quantity').onchange = updatePreview;
+        document.getElementById('filterStart').onchange = processAndRender;
+        document.getElementById('filterEnd').onchange = processAndRender;
+
+        function updatePreview() {
+            const pid = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
+            const p = PRODUCTS.find(x => x.id === pid);
+            if (p) {
+                document.getElementById('calcPreview').classList.remove('hidden');
+                document.getElementById('prevBonus').textContent = `$${(p.bonus * qty).toLocaleString()}`;
+                document.getElementById('prevFund').textContent = `$${(p.fund * qty).toLocaleString()}`;
+            } else { document.getElementById('calcPreview').classList.add('hidden'); }
+        }
+
+        initFormAndDates();
+        startApp();
+    </script>
+</body>
+</html>
+
