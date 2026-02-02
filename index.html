@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>產品獎金核銷系統-中清店 V3.2</title>
+    <title>產品獎金核銷系統-中清店 V3.3</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -123,7 +123,7 @@
         <div id="statsView" class="hidden space-y-4 animate-in fade-in">
             <!-- 日期篩選 -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 text-center">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">統計區間篩選</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">統計區間篩選</p>
                 <div class="grid grid-cols-2 gap-2">
                     <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
                     <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
@@ -175,7 +175,7 @@
                     <i data-lucide="layout-list" class="w-4 h-4"></i> 週期銷售總表
                 </h3>
                 <div id="periodSummaryContainer" class="space-y-2 text-[11px]">
-                    <!-- JS 自動生成 -->
+                    <!-- JS 生成 -->
                 </div>
             </div>
 
@@ -186,7 +186,7 @@
                 <p id="authStatusLabel" class="text-[10px] text-red-500 font-bold italic">核銷需要權限</p>
             </div>
 
-            <!-- 核銷列表 (純核銷，無刪除) -->
+            <!-- 核銷列表 -->
             <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-4">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-[11px]" id="auditTable">
@@ -265,8 +265,21 @@
 
         const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '劉芸汝', '施孟均'];
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
+        // --- Firebase 環境變數檢查與初始化 ---
+        // 注意：若要在 Vercel 部署，請確保 __firebase_config 與 __app_id 存在，否則請手動替換為您的配置字串
+        const getFirebaseConfig = () => {
+            if (typeof __firebase_config !== 'undefined') return JSON.parse(__firebase_config);
+            // 這裡可以手動放入您的 Firebase Config 做為備援
+            return null;
+        };
+
+        const config = getFirebaseConfig();
+        if (!config) {
+            console.error("Firebase Config is missing. Please provide it for deployment.");
+            alert("系統配置缺失，請聯繫開發人員。");
+        }
+
+        const app = initializeApp(config);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'sales-granular-v1';
@@ -297,11 +310,16 @@
         };
 
         const startApp = async () => {
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (err) {
+                console.error("Auth Error:", err);
             }
+
             onAuthStateChanged(auth, (user) => { if (user) loadData(); });
         };
 
@@ -309,11 +327,11 @@
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
             onSnapshot(q, (snapshot) => {
                 rawData = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                const isStatsActive = !document.getElementById('statsView').classList.contains('hidden');
-                if (isStatsActive) {
+                // 優化：隨時更新緩存數據，僅在統計頁面活躍時重繪
+                if (!document.getElementById('statsView').classList.contains('hidden')) {
                     processAndRender();
                 }
-            }, (err) => console.error("Firebase Error:", err));
+            }, (err) => console.error("Firebase Snapshot Error:", err));
         };
 
         window.processAndRender = () => {
@@ -328,6 +346,7 @@
             renderPersonSummary(validData); 
             renderAuditTable(filtered.sort((a,b) => b.ts - a.ts)); 
 
+            // 守衛：確保 Canvas 渲染對象存在且可見
             const chartCanvas = document.getElementById('posChart');
             if (chartCanvas && chartCanvas.offsetParent !== null) {
                 renderPosChart(validData, start, end);
@@ -393,7 +412,7 @@
             [1, 0, 2].forEach(idx => {
                 const item = sorted[idx];
                 if (!item || item[1] === 0) {
-                    container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] flex items-center justify-center italic">從缺</div>`;
+                    container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] flex items-center justify-center italic font-bold uppercase">No Active Data</div>`;
                     return;
                 }
                 const [name, bonus] = item;
@@ -456,7 +475,7 @@
                 <div class="flex justify-between items-center py-2 border-b border-blue-800/40">
                     <div class="flex-1 font-medium">${name}</div>
                     <div class="flex gap-3 items-center">
-                        <span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${val.qty}</span>
+                        <span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${val.qty} 件</span>
                         <span class="text-blue-200 font-bold w-14 text-right">$${val.bonus.toLocaleString()}</span>
                     </div>
                 </div>
@@ -502,13 +521,13 @@
         window.verifyPwd = () => {
             if (document.getElementById('pwdInput').value === '1016') {
                 isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender();
-            } else { alert("驗證失敗"); document.getElementById('pwdInput').value = ''; }
+            } else { alert("驗證代碼錯誤，請重新輸入。"); document.getElementById('pwdInput').value = ''; }
         };
         document.getElementById('verifyBtn').onclick = window.verifyPwd;
 
         window.toggleVerify = async (docId, status) => {
             if (!isUnlocked) return;
-            try { const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', docId); await updateDoc(docRef, { verified: status }); } catch (err) { console.error(err); }
+            try { const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', docId); await updateDoc(docRef, { verified: status }); } catch (err) { console.error("Update Status Error:", err); }
         };
 
         window.switchTab = (tab) => {
@@ -522,6 +541,7 @@
                 r.classList.add('hidden'); s.classList.remove('hidden');
                 bs.classList.add('tab-active'); bs.classList.remove('text-slate-400');
                 br.classList.remove('tab-active'); br.classList.add('text-slate-400');
+                // 切換時強制觸發渲染，解決手機端背景不刷新問題
                 processAndRender();
             }
         };
@@ -555,26 +575,28 @@
                 adminIcon.setAttribute('data-lucide', 'eye-off');
             }
             lucide.createIcons();
-            // 在申報頁預覽中也要控制
+            // 同步控制申報頁預覽區塊
             const prevFundBlock = document.getElementById('prevFundBlock');
             if(prevFundBlock) prevFundBlock.style.display = isAdmin ? 'block' : 'none';
+            // 同步更新現有表格欄位
+            processAndRender();
         };
 
         document.getElementById('salesForm').onsubmit = async (e) => {
             e.preventDefault();
             const pid = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
             const p = PRODUCTS.find(x => x.id === pid), btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerHTML = `傳送中...`;
+            btn.disabled = true; btn.innerHTML = `處理中，請稍候...`;
             try { 
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { 
                     emp: document.getElementById('employee').value, date: document.getElementById('date').value, 
                     prodId: pid, prodName: p.name, qty: qty, bonus: p.bonus * qty, 
                     fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false 
                 }); 
-                alert("申報成功！"); 
+                alert("銷售申報成功！"); 
                 document.getElementById('product').value = ""; 
                 document.getElementById('calcPreview').classList.add('hidden'); 
-            } catch (err) { alert("傳送失敗"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+            } catch (err) { alert("傳送失敗，請檢查網路連線後再試一次。"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
         };
 
         document.getElementById('product').onchange = updatePreview;
