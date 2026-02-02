@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- --- LINE 預覽控制區 (防止顯示姓名) --- -->
     <title>產品獎金核銷系統-中清店</title>
+    <meta name="description" content="中清店專用銷售申報與獎金核對管理系統。">
+    <meta property="og:title" content="產品獎金核銷系統-中清店">
+    <meta property="og:description" content="銷售數據管理系統">
+    <meta property="og:type" content="website">
+    <!-- --------------------------------- -->
+
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body { -webkit-tap-highlight-color: transparent; }
         .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
@@ -41,10 +50,10 @@
         <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-2">
                 <i data-lucide="shield-check" class="text-blue-600 w-6 h-6"></i>
-                <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統-中清店</h1>
+                <h1 class="text-base font-bold text-slate-800 tracking-tight">獎金核銷系統</h1>
             </div>
             <div class="flex gap-2">
-                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90 border border-slate-200 shadow-sm">
+                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90 border border-slate-200">
                     <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
                 </button>
                 <button id="adminToggle" class="p-2 bg-slate-100 rounded-lg text-slate-400 active:text-blue-600 border border-slate-200">
@@ -53,10 +62,9 @@
             </div>
         </header>
 
-        <!-- Main Content -->
         <main class="max-w-md mx-auto p-4">
             
-            <!-- Tab: Report -->
+            <!-- Tab: Report (申報) -->
             <div id="reportView" class="space-y-4 animate-in fade-in">
                 <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-200">
                     <h2 class="text-md font-semibold mb-4 flex items-center gap-2 text-slate-700">
@@ -73,19 +81,16 @@
                                 <option>黃品睿</option><option>劉芸汝</option><option>施孟均</option>
                             </select>
                         </div>
-
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">銷售日期</label>
-                            <input type="date" id="date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none font-mono" required>
+                            <input type="date" id="date" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none" required>
                         </div>
-
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">產品品項</label>
                             <select id="product" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none appearance-none" required>
                                 <option value="">選擇產品</option>
                             </select>
                         </div>
-
                         <div>
                             <label class="block text-xs font-bold text-slate-500 mb-1 uppercase tracking-wider">數量</label>
                             <select id="quantity" class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none">
@@ -112,22 +117,19 @@
                 </div>
             </div>
 
-            <!-- Tab: Statistics -->
+            <!-- Tab: Statistics (統計) -->
             <div id="statsView" class="hidden space-y-4 animate-in fade-in">
-                <!-- 日期篩選 -->
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3 text-center">
-                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center">統計區間篩選</p>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
-                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
+                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
+                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
                     </div>
                 </div>
 
                 <div id="leaderboardSection" class="grid grid-cols-3 gap-2"></div>
 
-                <!-- 人員獎金累計總表 (F 累加) -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-800 px-4 py-3">
+                    <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
                         <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2">
                             <i data-lucide="users" class="w-4 h-4 text-blue-400"></i> 人員獎金累計總表
                         </h3>
@@ -148,7 +150,7 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-                    <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest">週期銷售趨勢</p>
+                    <p class="text-[10px] font-bold text-slate-400 mb-2 uppercase tracking-widest text-center">週期銷售趨勢</p>
                     <div class="chart-container">
                         <canvas id="posChart"></canvas>
                     </div>
@@ -161,11 +163,9 @@
                     <div id="periodSummaryContainer" class="space-y-2 text-[11px]"></div>
                 </div>
 
-                <div class="px-1 flex justify-between items-end mt-4">
-                    <h2 class="font-bold text-slate-700 flex items-center gap-2 text-sm">
-                        <i data-lucide="clipboard-check" class="w-4 h-4 text-blue-500"></i> POS 核對明細
-                    </h2>
-                    <p id="authStatusLabel" class="text-[10px] text-red-500 font-bold italic">核銷需要權限</p>
+                <div class="px-1 flex justify-between items-end mt-4 text-[11px] font-bold text-slate-500">
+                    <h2>POS 核對明細</h2>
+                    <p id="authStatusLabel" class="text-red-500 italic">核銷需要權限</p>
                 </div>
 
                 <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-6">
@@ -191,36 +191,44 @@
         </main>
     </div>
 
-    <!-- 授權 Modal -->
     <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl animate-in zoom-in duration-200">
-            <h3 class="text-center font-bold text-slate-800 mb-4 tracking-wider text-sm">管理者驗證</h3>
-            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500">
+            <h3 class="text-center font-bold text-slate-800 mb-4 text-sm uppercase">管理者驗證</h3>
+            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500 shadow-inner">
             <div class="flex gap-2">
-                <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-lg text-slate-500 font-bold active:bg-slate-200">取消</button>
-                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold shadow-lg active:scale-95">確認</button>
+                <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-lg text-slate-500 font-bold">取消</button>
+                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold">確認</button>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
-        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1 transition-all">
+        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1">
             <i data-lucide="plus-circle" class="w-6 h-6"></i>
             <span class="text-[10px] font-bold">申報</span>
         </button>
-        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1 transition-all">
+        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1">
             <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
-            <span class="text-[10px] font-bold">統計報表</span>
+            <span class="text-[10px] font-bold">報表統計</span>
         </button>
     </nav>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        // --- 產品定義 ---
+        // --- Firebase 配置 ---
+        const config = {
+            apiKey: "AIzaSyDO9bM_lX6XrRU_nUb80J5lBNbR2jhpUS0",
+            authDomain: "product-3815d.firebaseapp.com",
+            projectId: "product-3815d",
+            storageBucket: "product-3815d.firebasestorage.app",
+            messagingSenderId: "741660301144",
+            appId: "1:741660301144:web:dcb6918c45ba5e1442372d",
+            measurementId: "G-KJXEW18ZTH"
+        };
+
         const PRODUCTS = [
             { id: 1, name: "1瓶 (沁涼/沁舒)", bonus: 25, fund: 30 },
             { id: 2, name: "5瓶 (沁涼/沁舒)", bonus: 70, fund: 100 },
@@ -245,58 +253,26 @@
 
         const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '劉芸汝', '施孟均'];
 
-        // --- SDK 配置注入 ---
-        const v_config = {
-            apiKey: "AIzaSyDO9bM_lX6XrRU_nUb80J5lBNbR2jhpUS0",
-            authDomain: "product-3815d.firebaseapp.com",
-            projectId: "product-3815d",
-            storageBucket: "product-3815d.firebasestorage.app",
-            messagingSenderId: "741660301144",
-            appId: "1:741660301144:web:dcb6918c45ba5e1442372d",
-            measurementId: "G-KJXEW18ZTH"
-        };
-
-        const getSafeConfig = () => {
-            if (typeof __firebase_config !== 'undefined' && __firebase_config !== "") return JSON.parse(__firebase_config);
-            return v_config; 
-        };
-
-        const config = getSafeConfig();
         const app = initializeApp(config);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sales-granular-v1';
+        const appId = 'sales-granular-v1';
 
-        let isAdmin = false;
-        let isUnlocked = false;
-        let rawData = [];
-        let posChart = null;
+        let isAdmin = false, isUnlocked = false, rawData = [], posChart = null;
 
         const initForm = () => {
-            const prodSelect = document.getElementById('product');
-            prodSelect.innerHTML = '<option value="">選擇產品</option>';
-            PRODUCTS.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = `${p.name} ($${p.bonus})`;
-                prodSelect.appendChild(opt);
-            });
+            const ps = document.getElementById('product'); ps.innerHTML = '<option value="">選擇產品</option>';
+            PRODUCTS.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} ($${p.bonus})`; ps.appendChild(o); });
             const now = new Date();
-            const firstDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const today = now.toISOString().split('T')[0];
-            document.getElementById('date').value = today;
-            document.getElementById('filterStart').value = firstDay;
-            document.getElementById('filterEnd').value = today;
+            const fDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const tDay = now.toISOString().split('T')[0];
+            document.getElementById('date').value = tDay;
+            document.getElementById('filterStart').value = fDay;
+            document.getElementById('filterEnd').value = tDay;
         };
 
         const startApp = async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (e) {}
+            await signInAnonymously(auth);
             onAuthStateChanged(auth, (u) => { if (u) loadData(); });
         };
 
@@ -304,44 +280,39 @@
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
             onSnapshot(q, (sn) => {
                 rawData = sn.docs.map(d => ({ docId: d.id, ...d.data() }));
-                if (!document.getElementById('statsView').classList.contains('hidden')) {
-                    processAndRender();
-                }
-            }, (err) => console.error(err));
+                if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
+            });
         };
 
         window.processAndRender = () => {
-            const start = document.getElementById('filterStart').value;
-            const end = document.getElementById('filterEnd').value;
-            const filtered = rawData.filter(e => (!start || !end) ? true : (e.date >= start && e.date <= end));
-            const validData = filtered.filter(e => !e.deleted);
-
-            renderLeaderboard(validData);
-            renderPeriodSummary(validData);
-            renderPersonSummary(validData); 
-            renderAuditTable(filtered.sort((a,b) => b.ts - a.ts)); 
-
-            const canvas = document.getElementById('posChart');
-            if (canvas && canvas.offsetParent !== null) renderPosChart(validData, start, end);
+            const s = document.getElementById('filterStart').value, e = document.getElementById('filterEnd').value;
+            const filtered = rawData.filter(x => (!s || !e) ? true : (x.date >= s && x.date <= e));
+            const valid = filtered.filter(x => !x.deleted);
+            renderLeaderboard(valid);
+            renderPeriodSummary(valid);
+            renderPersonSummary(valid);
+            renderAuditTable(filtered.sort((a,b) => b.ts - a.ts));
+            const c = document.getElementById('posChart');
+            if (c && c.offsetParent !== null) renderPosChart(valid, s, e);
         };
 
         const renderPersonSummary = (data) => {
-            const active = document.getElementById('personSummaryBody'), inactive = document.getElementById('noDataBody');
-            active.innerHTML = ''; inactive.innerHTML = '';
-            const stats = {}; EMPLOYEES.forEach(n => stats[n] = { bonus: 0, fund: 0, has: false });
+            const ab = document.getElementById('personSummaryBody'), ib = document.getElementById('noDataBody');
+            ab.innerHTML = ''; ib.innerHTML = '';
+            const stats = {}; EMPLOYEES.forEach(n => stats[n] = { b: 0, f: 0, h: false });
             data.forEach(d => {
                 let n = d.emp; if (n === '葉詩涵') n = '黃詩涵'; if (n === '黃晴雯') n = '黃靖雯';
-                if (stats[n]) { stats[n].bonus += d.bonus; stats[n].fund += d.fund; stats[n].has = true; }
+                if (stats[n]) { stats[n].b += d.bonus; stats[n].f += d.fund; stats[n].h = true; }
             });
-            Object.entries(stats).sort((a,b) => b[1].bonus - a[1].bonus).forEach(([n, v]) => {
+            Object.entries(stats).sort((a,b) => b[1].b - a[1].b).forEach(([n, v]) => {
                 const tr = document.createElement('tr');
-                if (v.has && v.bonus > 0) {
-                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}</td><td class="p-3 text-right font-black text-blue-600">$${v.bonus.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data">$${v.fund.toLocaleString()}</td>`;
-                    active.appendChild(tr);
+                if (v.h && v.b > 0) {
+                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}</td><td class="p-3 text-right font-black text-blue-600">$${v.b.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data">$${v.f.toLocaleString()}</td>`;
+                    ab.appendChild(tr);
                 } else {
                     tr.className = "opacity-30 grayscale";
-                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase">No Records</td><td class="p-3 text-right text-slate-300 admin-data">$0</td>`;
-                    inactive.appendChild(tr);
+                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase">No Record</td><td class="p-3 text-right text-slate-300 admin-data">$0</td>`;
+                    ib.appendChild(tr);
                 }
             });
         };
@@ -356,10 +327,7 @@
             const sorted = Object.entries(bonus).sort((a,b) => b[1] - a[1]);
             [1, 0, 2].forEach(idx => {
                 const item = sorted[idx];
-                if (!item || item[1] === 0) {
-                    container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] flex items-center justify-center italic">從缺</div>`;
-                    return;
-                }
+                if (!item || item[1] === 0) { container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] italic">Empty</div>`; return; }
                 const [n, b] = item; let style = "bg-white", icon = '', label = '';
                 if (idx === 0) { style = "bg-amber-50 border-amber-200 -mt-2 shadow-lg scale-110 z-20"; icon = '<i data-lucide="crown" class="w-6 h-6 crown-animate mx-auto mb-1"></i>'; label = "第一名"; }
                 else if (idx === 1) { style = "bg-slate-50 border-slate-200 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 silver-medal mx-auto mb-1"></i>'; label = "第二名"; }
@@ -382,12 +350,12 @@
 
         const renderPeriodSummary = (data) => {
             const container = document.getElementById('periodSummaryContainer');
-            const summary = data.reduce((acc, curr) => { if (!acc[curr.prodName]) acc[curr.prodName] = { qty: 0, bonus: 0 }; acc[curr.prodName].qty += curr.qty; acc[curr.prodName].bonus += curr.bonus; return acc; }, {});
-            const entries = Object.entries(summary).sort((a,b) => b[1].qty - a[1].qty);
-            if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">無數據</p>`; return; }
-            container.innerHTML = entries.map(([n, v]) => `<div class="flex justify-between items-center py-2 border-b border-blue-800/40"><div class="flex-1 font-medium text-[12px]">${n}</div><div class="flex gap-3 items-center"><span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${v.qty}</span><span class="text-blue-200 font-bold w-14 text-right">$${v.bonus.toLocaleString()}</span></div></div>`).join('');
+            const summary = data.reduce((acc, curr) => { if (!acc[curr.prodName]) acc[curr.prodName] = { q: 0, b: 0 }; acc[curr.prodName].q += curr.qty; acc[curr.prodName].b += curr.bonus; return acc; }, {});
+            const entries = Object.entries(summary).sort((a,b) => b[1].q - a[1].q);
+            if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">Empty</p>`; return; }
+            container.innerHTML = entries.map(([n, v]) => `<div class="flex justify-between items-center py-2 border-b border-blue-800/40 text-[12px]"><div class="flex-1 font-medium">${n}</div><div class="flex gap-3 items-center"><span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${v.q}</span><span class="text-blue-200 font-bold w-14 text-right">$${v.b.toLocaleString()}</span></div></div>`).join('');
             const tQ = data.reduce((s, c) => s + c.qty, 0), tB = data.reduce((s, c) => s + c.bonus, 0);
-            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計 (TOTAL)</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
+            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
         };
 
         const renderAuditTable = (data) => {
@@ -401,10 +369,7 @@
         };
 
         window.closePwdModal = () => { document.getElementById('pwdModal').classList.add('hidden'); document.getElementById('pwdInput').value = ''; };
-        window.verifyPwd = () => {
-            if (document.getElementById('pwdInput').value === '1016') { isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender(); }
-            else { alert("驗證碼錯誤"); document.getElementById('pwdInput').value = ''; }
-        };
+        window.verifyPwd = () => { if (document.getElementById('pwdInput').value === '1016') { isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender(); } else { alert("錯誤"); document.getElementById('pwdInput').value = ''; } };
         document.getElementById('verifyBtn').onclick = window.verifyPwd;
 
         window.toggleVerify = async (id, s) => { if (isUnlocked) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', id), { verified: s }); };
@@ -426,40 +391,36 @@
         document.getElementById('authBtn').onclick = () => { if (isUnlocked) { isUnlocked = false; updateLockUI(); processAndRender(); } else { document.getElementById('pwdModal').classList.remove('hidden'); document.getElementById('pwdInput').focus(); } };
 
         document.getElementById('adminToggle').onclick = () => {
-            isAdmin = !isAdmin;
-            const body = document.body;
-            const adminIcon = document.getElementById('adminIcon');
-            if (isAdmin) { body.classList.add('is-admin-view'); adminIcon.setAttribute('data-lucide', 'eye'); }
-            else { body.classList.remove('is-admin-view'); adminIcon.setAttribute('data-lucide', 'eye-off'); }
+            isAdmin = !isAdmin; const body = document.body; const icon = document.getElementById('adminIcon');
+            if (isAdmin) { body.classList.add('is-admin-view'); icon.setAttribute('data-lucide', 'eye'); }
+            else { body.classList.remove('is-admin-view'); icon.setAttribute('data-lucide', 'eye-off'); }
             lucide.createIcons();
-            const prevF = document.getElementById('prevFundBlock'); 
-            if(prevF) prevF.style.display = isAdmin ? 'block' : 'none';
+            const prevF = document.getElementById('prevFundBlock'); if(prevF) prevF.style.display = isAdmin ? 'block' : 'none';
             processAndRender();
         };
 
         document.getElementById('salesForm').onsubmit = async (e) => {
             e.preventDefault(); const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
             const p = PRODUCTS.find(x => x.id === pId), btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerHTML = `處理中...`;
+            btn.disabled = true; btn.innerHTML = `傳送中...`;
             try { 
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { emp: document.getElementById('employee').value, date: document.getElementById('date').value, prodId: pId, prodName: p.name, qty: qty, bonus: p.bonus * qty, fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false }); 
-                alert("銷售申報成功！"); document.getElementById('product').value = ""; document.getElementById('calcPreview').classList.add('hidden'); 
-            } catch (err) { alert("傳送失敗，請確認配置。"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+                alert("申報成功！"); document.getElementById('product').value = ""; document.getElementById('calcPreview').classList.add('hidden'); 
+            } catch (err) { alert("傳送失敗"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
         };
 
-        document.getElementById('product').onchange = updatePreview;
-        document.getElementById('quantity').onchange = updatePreview;
-        document.getElementById('filterStart').onchange = processAndRender;
-        document.getElementById('filterEnd').onchange = processAndRender;
-
-        function updatePreview() {
+        document.getElementById('product').onchange = () => {
             const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value), p = PRODUCTS.find(x => x.id === pId);
             if (p) { document.getElementById('calcPreview').classList.remove('hidden'); document.getElementById('prevBonus').textContent = `$${(p.bonus * qty).toLocaleString()}`; document.getElementById('prevFund').textContent = `$${(p.fund * qty).toLocaleString()}`; }
             else { document.getElementById('calcPreview').classList.add('hidden'); }
-        }
+        };
+        document.getElementById('quantity').onchange = document.getElementById('product').onchange;
+        document.getElementById('filterStart').onchange = processAndRender;
+        document.getElementById('filterEnd').onchange = processAndRender;
 
         initForm();
         startApp();
     </script>
 </body>
 </html>
+
