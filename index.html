@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     
-    <!-- --- LINE 預覽控制區 (防止顯示姓名) --- -->
+    <!-- --- LINE 預覽控管區 (關鍵：防止顯示選單姓名) --- -->
     <title>產品獎金核銷系統-中清店</title>
-    <meta name="description" content="中清店專用銷售申報與獎金核對管理系統。">
+    <meta name="description" content="產品銷售獎金-中清店專用管理平台。">
     <meta property="og:title" content="產品獎金核銷系統-中清店">
-    <meta property="og:description" content="銷售數據管理系統">
+    <meta property="og:description" content="中清店銷售數據與獎金管理系統">
     <meta property="og:type" content="website">
-    <!-- --------------------------------- -->
+    <!-- --------------------------------------- -->
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -37,10 +37,10 @@
         .silver-medal { color: #94a3b8; }
         .bronze-medal { color: #b45309; }
 
-        /* 公積金隱私控制 */
-        .admin-data { display: none; }
-        body.is-admin-view .admin-data { display: table-cell; }
-        body.is-admin-view .admin-flex { display: flex; }
+        /* 眼睛開啟時的公積金顯示控制 */
+        .admin-data-column { display: none !important; }
+        body.is-admin-view .admin-data-column { display: table-cell !important; }
+        body.is-admin-view .admin-flex-data { display: flex !important; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-32 font-sans text-slate-900">
@@ -50,10 +50,10 @@
         <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
             <div class="flex items-center gap-2">
                 <i data-lucide="shield-check" class="text-blue-600 w-6 h-6"></i>
-                <h1 class="text-base font-bold text-slate-800 tracking-tight">獎金核銷系統</h1>
+                <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統</h1>
             </div>
             <div class="flex gap-2">
-                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90 border border-slate-200">
+                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90 border border-slate-200 shadow-sm">
                     <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
                 </button>
                 <button id="adminToggle" class="p-2 bg-slate-100 rounded-lg text-slate-400 active:text-blue-600 border border-slate-200">
@@ -63,7 +63,6 @@
         </header>
 
         <main class="max-w-md mx-auto p-4">
-            
             <!-- Tab: Report (申報) -->
             <div id="reportView" class="space-y-4 animate-in fade-in">
                 <div class="bg-white rounded-2xl shadow-sm p-6 border border-slate-200">
@@ -104,7 +103,7 @@
                                 <p class="text-[10px] text-blue-600 font-bold uppercase">預計獎金</p>
                                 <p id="prevBonus" class="text-xl font-black text-blue-800">$0</p>
                             </div>
-                            <div id="prevFundBlock" class="admin-data border-l border-blue-200 pl-4">
+                            <div id="prevFundBlock" class="admin-data-column border-l border-blue-200 pl-4">
                                 <p class="text-[10px] text-indigo-600 font-bold uppercase">預計公積金</p>
                                 <p id="prevFund" class="text-xl font-black text-indigo-800">$0</p>
                             </div>
@@ -121,8 +120,8 @@
             <div id="statsView" class="hidden space-y-4 animate-in fade-in">
                 <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
                     <div class="grid grid-cols-2 gap-2">
-                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
-                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none">
+                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
+                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
                     </div>
                 </div>
 
@@ -140,7 +139,7 @@
                                 <tr>
                                     <th class="p-3">銷售人員</th>
                                     <th class="p-3 text-right">獎金累計</th>
-                                    <th class="p-3 text-right text-indigo-500 admin-data">公積金累計</th>
+                                    <th class="p-3 text-right text-indigo-500 admin-data-column">公積金累計</th>
                                 </tr>
                             </thead>
                             <tbody id="personSummaryBody" class="divide-y divide-slate-100"></tbody>
@@ -163,12 +162,12 @@
                     <div id="periodSummaryContainer" class="space-y-2 text-[11px]"></div>
                 </div>
 
-                <div class="px-1 flex justify-between items-end mt-4 text-[11px] font-bold text-slate-500">
+                <div class="px-1 flex justify-between items-end mt-4 text-[11px] font-bold text-slate-500 italic">
                     <h2>POS 核對明細</h2>
-                    <p id="authStatusLabel" class="text-red-500 italic">核銷需要權限</p>
+                    <p id="authStatusLabel" class="text-red-500">核銷需要權限</p>
                 </div>
 
-                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-6">
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-4">
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-[11px]" id="auditTable">
                             <thead class="bg-slate-50 border-b text-slate-500 font-bold">
@@ -184,20 +183,21 @@
                     </div>
                 </div>
 
-                <footer class="text-center py-8 text-slate-400 text-[10px] tracking-widest">
+                <footer class="text-center py-8 text-slate-400 text-[10px] tracking-widest border-t border-slate-100">
                     © 原點數位科技
                 </footer>
             </div>
         </main>
     </div>
 
+    <!-- 授權 Modal -->
     <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl animate-in zoom-in duration-200">
-            <h3 class="text-center font-bold text-slate-800 mb-4 text-sm uppercase">管理者驗證</h3>
-            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500 shadow-inner">
+            <h3 class="text-center font-bold text-slate-800 mb-4 text-sm">請輸入驗證</h3>
+            <input type="password" id="pwdInput" placeholder="驗證碼" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500 shadow-inner">
             <div class="flex gap-2">
                 <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-lg text-slate-500 font-bold">取消</button>
-                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold">確認</button>
+                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold shadow-lg">確認</button>
             </div>
         </div>
     </div>
@@ -218,7 +218,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        // --- Firebase 配置 ---
+        // --- 配置注入 ---
         const config = {
             apiKey: "AIzaSyDO9bM_lX6XrRU_nUb80J5lBNbR2jhpUS0",
             authDomain: "product-3815d.firebaseapp.com",
@@ -256,7 +256,7 @@
         const app = initializeApp(config);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'sales-granular-v1';
+        const appId = 'sales-granular-v1'; // 確保符合 Rule 1
 
         let isAdmin = false, isUnlocked = false, rawData = [], posChart = null;
 
@@ -272,16 +272,17 @@
         };
 
         const startApp = async () => {
-            await signInAnonymously(auth);
+            try { await signInAnonymously(auth); } catch (e) { console.error("Anonymous Sign-in Failed"); }
             onAuthStateChanged(auth, (u) => { if (u) loadData(); });
         };
 
         const loadData = () => {
+            // 嚴格遵循 Rule 1 與 Rule 2
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
             onSnapshot(q, (sn) => {
                 rawData = sn.docs.map(d => ({ docId: d.id, ...d.data() }));
                 if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
-            });
+            }, (err) => { console.error("Firestore Permission Denied or Rule Error"); });
         };
 
         window.processAndRender = () => {
@@ -307,11 +308,11 @@
             Object.entries(stats).sort((a,b) => b[1].b - a[1].b).forEach(([n, v]) => {
                 const tr = document.createElement('tr');
                 if (v.h && v.b > 0) {
-                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}</td><td class="p-3 text-right font-black text-blue-600">$${v.b.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data">$${v.f.toLocaleString()}</td>`;
+                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}</td><td class="p-3 text-right font-black text-blue-600">$${v.b.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data-column">$${v.f.toLocaleString()}</td>`;
                     ab.appendChild(tr);
                 } else {
                     tr.className = "opacity-30 grayscale";
-                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase">No Record</td><td class="p-3 text-right text-slate-300 admin-data">$0</td>`;
+                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase tracking-tighter">No Record</td><td class="p-3 text-right text-slate-300 admin-data-column">$0</td>`;
                     ib.appendChild(tr);
                 }
             });
@@ -327,7 +328,7 @@
             const sorted = Object.entries(bonus).sort((a,b) => b[1] - a[1]);
             [1, 0, 2].forEach(idx => {
                 const item = sorted[idx];
-                if (!item || item[1] === 0) { container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] italic">Empty</div>`; return; }
+                if (!item || item[1] === 0) { container.innerHTML += `<div class="bg-white p-2 rounded-xl border border-dashed text-center text-slate-200 py-6 text-[9px] italic flex items-center justify-center">從缺</div>`; return; }
                 const [n, b] = item; let style = "bg-white", icon = '', label = '';
                 if (idx === 0) { style = "bg-amber-50 border-amber-200 -mt-2 shadow-lg scale-110 z-20"; icon = '<i data-lucide="crown" class="w-6 h-6 crown-animate mx-auto mb-1"></i>'; label = "第一名"; }
                 else if (idx === 1) { style = "bg-slate-50 border-slate-200 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 silver-medal mx-auto mb-1"></i>'; label = "第二名"; }
@@ -355,14 +356,14 @@
             if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">Empty</p>`; return; }
             container.innerHTML = entries.map(([n, v]) => `<div class="flex justify-between items-center py-2 border-b border-blue-800/40 text-[12px]"><div class="flex-1 font-medium">${n}</div><div class="flex gap-3 items-center"><span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${v.q}</span><span class="text-blue-200 font-bold w-14 text-right">$${v.b.toLocaleString()}</span></div></div>`).join('');
             const tQ = data.reduce((s, c) => s + c.qty, 0), tB = data.reduce((s, c) => s + c.bonus, 0);
-            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
+            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計 (TOTAL)</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
         };
 
         const renderAuditTable = (data) => {
             const body = document.getElementById('auditTableBody'); body.innerHTML = '';
             data.forEach(item => {
                 const tr = document.createElement('tr'); if (item.verified) tr.className = "verified-row";
-                tr.innerHTML = `<td class="p-3 text-center"><input type="checkbox" ${item.verified ? 'checked' : ''} ${isUnlocked ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"></td><td class="p-3"><div class="font-bold text-slate-700 text-xs">${item.emp}</div></td><td class="p-3"><div class="text-[9px] font-mono text-slate-400 mb-0.5">${item.date}</div><div class="text-[11px] leading-tight">${item.prodName}</div><div class="text-[10px] font-bold text-blue-500 mt-0.5">x${item.qty}</div></td><td class="p-3 text-right font-bold text-xs">$${item.bonus.toLocaleString()}</td>`;
+                tr.innerHTML = `<td class="p-3 text-center"><input type="checkbox" ${item.verified ? 'checked' : ''} ${isUnlocked ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer transition-transform active:scale-75"></td><td class="p-3"><div class="font-bold text-slate-700 text-xs">${item.emp}</div></td><td class="p-3"><div class="text-[9px] font-mono text-slate-400 mb-0.5">${item.date}</div><div class="text-[11px] leading-tight">${item.prodName}</div><div class="text-[10px] font-bold text-blue-500 mt-0.5">x${item.qty}</div></td><td class="p-3 text-right font-bold text-xs">$${item.bonus.toLocaleString()}</td>`;
                 body.appendChild(tr);
             });
             lucide.createIcons();
@@ -383,7 +384,7 @@
 
         function updateLockUI() {
             const icon = document.getElementById('lockIcon'), label = document.getElementById('authStatusLabel');
-            if (isUnlocked) { icon.setAttribute('data-lucide', 'unlock'); icon.classList.replace('lock-locked', 'lock-unlocked'); label.textContent = "驗證授權已通過"; label.classList.replace('text-red-500', 'text-green-600'); }
+            if (isUnlocked) { icon.setAttribute('data-lucide', 'unlock'); icon.classList.replace('lock-locked', 'lock-unlocked'); label.textContent = "驗證授權通過"; label.classList.replace('text-red-500', 'text-green-600'); }
             else { icon.setAttribute('data-lucide', 'lock'); icon.classList.replace('lock-unlocked', 'lock-locked'); label.textContent = "核銷需要權限"; label.classList.replace('text-green-600', 'text-red-500'); }
             lucide.createIcons();
         }
@@ -391,22 +392,23 @@
         document.getElementById('authBtn').onclick = () => { if (isUnlocked) { isUnlocked = false; updateLockUI(); processAndRender(); } else { document.getElementById('pwdModal').classList.remove('hidden'); document.getElementById('pwdInput').focus(); } };
 
         document.getElementById('adminToggle').onclick = () => {
-            isAdmin = !isAdmin; const body = document.body; const icon = document.getElementById('adminIcon');
-            if (isAdmin) { body.classList.add('is-admin-view'); icon.setAttribute('data-lucide', 'eye'); }
-            else { body.classList.remove('is-admin-view'); icon.setAttribute('data-lucide', 'eye-off'); }
+            isAdmin = !isAdmin; const b = document.body; const i = document.getElementById('adminIcon');
+            if (isAdmin) { b.classList.add('is-admin-view'); i.setAttribute('data-lucide', 'eye'); }
+            else { b.classList.remove('is-admin-view'); i.setAttribute('data-lucide', 'eye-off'); }
             lucide.createIcons();
-            const prevF = document.getElementById('prevFundBlock'); if(prevF) prevF.style.display = isAdmin ? 'block' : 'none';
+            const pf = document.getElementById('prevFundBlock'); if(pf) pf.style.display = isAdmin ? 'block' : 'none';
             processAndRender();
         };
 
         document.getElementById('salesForm').onsubmit = async (e) => {
             e.preventDefault(); const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
             const p = PRODUCTS.find(x => x.id === pId), btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerHTML = `傳送中...`;
+            btn.disabled = true; btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin inline mr-2"></i> 傳送中...`;
+            lucide.createIcons();
             try { 
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { emp: document.getElementById('employee').value, date: document.getElementById('date').value, prodId: pId, prodName: p.name, qty: qty, bonus: p.bonus * qty, fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false }); 
                 alert("申報成功！"); document.getElementById('product').value = ""; document.getElementById('calcPreview').classList.add('hidden'); 
-            } catch (err) { alert("傳送失敗"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+            } catch (err) { alert("傳送失敗，請聯繫技術人員。"); console.error(err); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
         };
 
         document.getElementById('product').onchange = () => {
