@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>產品獎金核銷系統-中清店 V3.0</title>
+    <title>產品獎金核銷系統-中清店 V3.1</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -22,7 +22,7 @@
         .lock-unlocked { color: #22c55e; }
         .chart-container { position: relative; height: 220px; width: 100%; }
         
-        /* 榮譽標誌 */
+        /* 榮譽標誌動畫 */
         @keyframes crown-flash {
             0%, 100% { filter: drop-shadow(0 0 2px #fbbf24); transform: scale(1); }
             50% { filter: drop-shadow(0 0 8px #f59e0b); transform: scale(1.1); }
@@ -30,9 +30,14 @@
         .crown-animate { animation: crown-flash 1.5s infinite ease-in-out; color: #fbbf24; }
         .silver-medal { color: #94a3b8; }
         .bronze-medal { color: #b45309; }
+        
+        /* 隱私控制顯示效果 */
+        .admin-field { display: none; }
+        body.is-admin-mode .admin-field { display: table-cell; }
+        body.is-admin-mode .admin-flex { display: flex; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen pb-24 font-sans text-slate-900">
+<body class="bg-slate-50 min-h-screen pb-32 font-sans text-slate-900">
 
     <!-- Header -->
     <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
@@ -41,7 +46,6 @@
             <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統-中清店</h1>
         </div>
         <div class="flex gap-2">
-            <!-- 鎖頭解鎖與眼睛隱私 -->
             <button id="authBtn" class="p-2 bg-slate-100 rounded-lg transition-all active:scale-90">
                 <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
             </button>
@@ -97,7 +101,7 @@
                             <p class="text-[10px] text-blue-600 font-bold uppercase">預計獎金</p>
                             <p id="prevBonus" class="text-xl font-black text-blue-800">$0</p>
                         </div>
-                        <div class="admin-only hidden border-l border-blue-200 pl-4">
+                        <div id="prevFundBlock" class="admin-field border-l border-blue-200 pl-4">
                             <p class="text-[10px] text-indigo-600 font-bold uppercase">預計公積金</p>
                             <p id="prevFund" class="text-xl font-black text-indigo-800">$0</p>
                         </div>
@@ -123,7 +127,7 @@
 
             <!-- 排行榜 -->
             <div id="leaderboardSection" class="grid grid-cols-3 gap-2">
-                <!-- JS 動態渲染 -->
+                <!-- JS 動態生成 -->
             </div>
 
             <!-- 人員獎金累計總表 (F 累加) -->
@@ -139,7 +143,7 @@
                             <tr>
                                 <th class="p-3">銷售人員</th>
                                 <th class="p-3 text-right">獎金累計</th>
-                                <th id="fundHeader" class="p-3 text-right text-indigo-500 admin-only hidden">公積金</th>
+                                <th class="p-3 text-right text-indigo-500 admin-field">公積金</th>
                             </tr>
                         </thead>
                         <tbody id="personSummaryBody" class="divide-y divide-slate-100">
@@ -177,7 +181,7 @@
                 <p id="authStatusLabel" class="text-[10px] text-red-500 font-bold italic">核銷需要權限</p>
             </div>
 
-            <!-- 核銷列表 -->
+            <!-- 核銷列表 (無刪除按鈕) -->
             <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-6">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-[11px]" id="auditTable">
@@ -195,6 +199,11 @@
                     </table>
                 </div>
             </div>
+
+            <!-- 版權宣告 -->
+            <footer class="text-center py-6 text-slate-400 text-[10px] border-t border-slate-100 mt-4 mb-10">
+                © 原點數位科技
+            </footer>
         </div>
     </main>
 
@@ -202,7 +211,7 @@
     <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs rounded-2xl p-6 shadow-2xl animate-in zoom-in duration-200">
             <h3 class="text-center font-bold text-slate-800 mb-4 tracking-wider">管理者驗證</h3>
-            <input type="password" id="pwdInput" placeholder="請輸入驗證碼" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500">
+            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 focus:border-blue-500">
             <div class="flex gap-2">
                 <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-lg text-slate-500 font-bold">取消</button>
                 <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-lg text-white font-bold shadow-lg active:scale-95">確認</button>
@@ -212,11 +221,11 @@
 
     <!-- Bottom Nav -->
     <nav class="fixed bottom-0 left-0 right-0 bg-white border-t flex justify-around items-center py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
-        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1">
+        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1 transition-all">
             <i data-lucide="plus-circle" class="w-6 h-6"></i>
             <span class="text-[10px] font-bold">申報</span>
         </button>
-        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1">
+        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1 transition-all">
             <i data-lucide="bar-chart-3" class="w-6 h-6"></i>
             <span class="text-[10px] font-bold">報表統計</span>
         </button>
@@ -262,7 +271,7 @@
         let rawData = [];
         let posChart = null;
 
-        // --- 初始化日期設定 ---
+        // --- 初始化設定 ---
         const initFormAndDates = () => {
             const prodSelect = document.getElementById('product');
             prodSelect.innerHTML = '<option value="">選擇產品</option>';
@@ -295,7 +304,6 @@
             const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
             onSnapshot(q, (snapshot) => {
                 rawData = snapshot.docs.map(doc => ({ docId: doc.id, ...doc.data() }));
-                // 提交後更新緩存，如果正在統計頁，立即刷新 UI
                 const isStatsActive = !document.getElementById('statsView').classList.contains('hidden');
                 if (isStatsActive) {
                     processAndRender();
@@ -308,6 +316,7 @@
             const end = document.getElementById('filterEnd').value;
             
             const filtered = rawData.filter(e => (!start || !end) ? true : (e.date >= start && e.date <= end));
+            // 由於已移除刪除功能，此處過濾邏輯僅針對歷史遺留的 deleted 標記
             const validData = filtered.filter(e => !e.deleted);
 
             renderLeaderboard(validData);
@@ -320,7 +329,6 @@
                 renderPosChart(validData, start, end);
             }
             
-            // 處理標題與公積金字眼的顯示機制
             updateAdminUIElements();
         };
 
@@ -352,7 +360,7 @@
                     tr.innerHTML = `
                         <td class="p-3 font-bold text-slate-700">${name}</td>
                         <td class="p-3 text-right font-black text-blue-600">$${val.bonus.toLocaleString()}</td>
-                        <td class="p-3 text-right font-bold text-indigo-500 admin-only ${isAdmin ? '' : 'hidden'}">$${val.fund.toLocaleString()}</td>
+                        <td class="p-3 text-right font-bold text-indigo-500 admin-field">$${val.fund.toLocaleString()}</td>
                     `;
                     activeBody.appendChild(tr);
                 } else {
@@ -361,7 +369,7 @@
                     tr.innerHTML = `
                         <td class="p-3 font-medium text-slate-400 italic">${name}</td>
                         <td class="p-3 text-right text-[10px] text-slate-300 font-bold">尚無業績</td>
-                        <td class="p-3 text-right text-slate-300 admin-only ${isAdmin ? '' : 'hidden'}">$0</td>
+                        <td class="p-3 text-right text-slate-300 admin-field">$0</td>
                     `;
                     inactiveBody.appendChild(tr);
                 }
@@ -461,14 +469,12 @@
             body.innerHTML = '';
             data.forEach(item => {
                 const tr = document.createElement('tr');
-                const isDeleted = item.deleted === true;
-                const isVerified = item.verified === true && !isDeleted;
+                const isVerified = item.verified === true;
                 if (isVerified) tr.className = "verified-row";
-                if (isDeleted) tr.className = "deleted-row";
                 
                 tr.innerHTML = `
                     <td class="p-3 text-center">
-                        <input type="checkbox" ${isVerified ? 'checked' : ''} ${isUnlocked && !isDeleted ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                        <input type="checkbox" ${isVerified ? 'checked' : ''} ${isUnlocked ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500 cursor-pointer">
                     </td>
                     <td class="p-3">
                         <div class="font-bold text-slate-700">${item.emp}</div>
@@ -476,7 +482,6 @@
                     <td class="p-3">
                         <div class="text-[9px] font-mono text-slate-400 mb-1">${item.date}</div>
                         <div class="text-[11px] leading-tight">${item.prodName}</div>
-                        ${isDeleted ? '<div class="text-[9px] font-black text-red-600 mt-1 uppercase">輸入錯誤刪除</div>' : ''}
                         <div class="text-[10px] font-bold text-blue-500 mt-1">x${item.qty}</div>
                     </td>
                     <td class="p-3 text-right font-bold">$${item.bonus.toLocaleString()}</td>
@@ -516,20 +521,17 @@
             }
         };
 
-        // 核心修復：強制更新所有 Admin 相關 UI 的字眼與顯示
+        // 核心修復：使用 CSS Class 管理公積金欄位顯示
         function updateAdminUIElements() {
             const adminIcon = document.getElementById('adminIcon');
-            const adminCells = document.querySelectorAll('.admin-only');
-            const fundHeader = document.getElementById('fundHeader');
+            const body = document.body;
             
             if (isAdmin) {
                 adminIcon.setAttribute('data-lucide', 'eye');
-                adminCells.forEach(c => c.classList.remove('hidden'));
-                if(fundHeader) fundHeader.classList.remove('hidden');
+                body.classList.add('is-admin-mode');
             } else {
                 adminIcon.setAttribute('data-lucide', 'eye-off');
-                adminCells.forEach(c => c.classList.add('hidden'));
-                if(fundHeader) fundHeader.classList.add('hidden');
+                body.classList.remove('is-admin-mode');
             }
             lucide.createIcons();
         }
@@ -553,24 +555,30 @@
 
         document.getElementById('adminToggle').onclick = () => {
             isAdmin = !isAdmin;
-            processAndRender(); // 觸發完整重繪與欄位檢查
+            updateAdminUIElements();
+            // 在隱私切換時也需要更新申報預覽塊的公積金欄位
+            const prevFundBlock = document.getElementById('prevFundBlock');
+            if(prevFundBlock) {
+                if(isAdmin) prevFundBlock.style.display = 'block';
+                else prevFundBlock.style.display = 'none';
+            }
         };
 
         document.getElementById('salesForm').onsubmit = async (e) => {
             e.preventDefault();
             const pid = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
             const p = PRODUCTS.find(x => x.id === pid), btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerHTML = `資料傳送中...`;
+            btn.disabled = true; btn.innerHTML = `傳送中...`;
             try { 
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { 
                     emp: document.getElementById('employee').value, date: document.getElementById('date').value, 
                     prodId: pid, prodName: p.name, qty: qty, bonus: p.bonus * qty, 
                     fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false 
                 }); 
-                alert("銷售申報成功！"); 
+                alert("申報成功！"); 
                 document.getElementById('product').value = ""; 
                 document.getElementById('calcPreview').classList.add('hidden'); 
-            } catch (err) { alert("系統繁忙，請稍後再試"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+            } catch (err) { alert("傳送失敗"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
         };
 
         document.getElementById('product').onchange = updatePreview;
