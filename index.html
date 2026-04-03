@@ -188,26 +188,35 @@
             appId: "1:741660301144:web:dcb6918c45ba5e1442372d"
         };
 
+        // --- V1 Modification: 2026.04.01 新版獎金對應 ---
         const PRODUCTS = [
-            { id: 1, name: "1瓶 (沁涼/沁舒)", bonus: 25, fund: 30 },
-            { id: 2, name: "5瓶 (沁涼/沁舒)", bonus: 70, fund: 100 },
-            { id: 3, name: "4瓶(沁涼)+1瓶按摩霜", bonus: 70, fund: 100 },
-            { id: 4, name: "2瓶(沁涼)+2瓶沁舒", bonus: 70, fund: 100 },
-            { id: 5, name: "1瓶按摩霜", bonus: 50, fund: 70 },
-            { id: 6, name: "3瓶按摩霜", bonus: 100, fund: 150 },
-            { id: 7, name: "1袋茶 (12入夾鏈)", bonus: 50, fund: 60 },
-            { id: 8, name: "4袋茶 (12入夾鏈)", bonus: 60, fund: 80 },
-            { id: 9, name: "1袋茶 (30入夾鏈)", bonus: 80, fund: 100 },
-            { id: 10, name: "2袋茶 (30入夾鏈)", bonus: 60, fund: 80 },
-            { id: 11, name: "12入茶禮盒 1盒", bonus: 50, fund: 60 },
-            { id: 12, name: "12入茶禮盒 4盒", bonus: 60, fund: 80 },
-            { id: 13, name: "雞湯 買10送2", bonus: 300, fund: 450 },
-            { id: 14, name: "滴雞精 (原味)", bonus: 50, fund: 50 },
-            { id: 15, name: "滴雞精 (膠原)", bonus: 50, fund: 50 },
-            { id: 16, name: "滴雞精 (十全)", bonus: 50, fund: 50 },
-            { id: 17, name: "滴雞精 (綜合禮盒)", bonus: 200, fund: 200 },
-            { id: 18, name: "龜苓膏 6入禮盒", bonus: 100, fund: 120 },
-            { id: 19, name: "龜苓膏 9入禮盒", bonus: 120, fund: 120 }
+            // 花莯然 沁心 系列
+            { id: 1, name: "1瓶滾珠瓶 (沁舒/沁涼)", bonus: 15, fund: 25 },
+            { id: 2, name: "5瓶滾珠瓶 (沁舒/沁涼)", bonus: 40, fund: 60 },
+            { id: 3, name: "1瓶涼感霜 (沁樂)", bonus: 30, fund: 50 },
+            { id: 4, name: "3瓶涼感霜 (沁樂)", bonus: 40, fund: 60 },
+            { id: 5, name: "4瓶滾珠+1瓶涼感霜", bonus: 40, fund: 60 },
+            { id: 6, name: "2瓶滾珠+2瓶涼感霜", bonus: 40, fund: 60 },
+            { id: 7, name: "1瓶沁舒+1涼+1霜+2貼布", bonus: 40, fund: 60 },
+            
+            // 花莯然 茶飲 系列
+            { id: 8, name: "1袋12入茶包", bonus: 30, fund: 50 },
+            { id: 9, name: "4袋12入茶包", bonus: 30, fund: 50 },
+            { id: 10, name: "1袋30入茶包", bonus: 40, fund: 60 },
+            { id: 11, name: "2袋30入茶包", bonus: 30, fund: 50 },
+            { id: 12, name: "1盒12入茶包", bonus: 30, fund: 50 },
+            { id: 13, name: "4盒12入茶包", bonus: 30, fund: 50 },
+            
+            // 唐太盅 燉品
+            { id: 14, name: "燉湯買10送2", bonus: 150, fund: 250 },
+            
+            // 唐太盅 滴雞精
+            { id: 15, name: "滴雞精 2入體驗盒", bonus: 30, fund: 50 },
+            { id: 16, name: "滴雞精 12入禮盒", bonus: 100, fund: 200 },
+            
+            // 龜苓膏 禮盒
+            { id: 17, name: "龜苓膏 6入禮盒", bonus: 60, fund: 80 },
+            { id: 18, name: "龜苓膏 9入禮盒", bonus: 60, fund: 80 }
         ];
 
         const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿',  '施孟均'];
@@ -383,6 +392,3 @@
     </script>
 </body>
 </html>
-
-
-
