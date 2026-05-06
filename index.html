@@ -141,7 +141,7 @@
         </main>
     </div>
 
-    <!-- 美化的成功對話框 (Success Modal) -->
+    <!-- 成功對話框 -->
     <div id="successModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6">
         <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl text-center animate-modal relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
@@ -188,38 +188,25 @@
             appId: "1:741660301144:web:dcb6918c45ba5e1442372d"
         };
 
-        // --- V1 Modification: 2026.04.01 新版獎金對應 ---
+        // --- 2026.05.01 新版獎金對應 ---
         const PRODUCTS = [
-            // 花莯然 沁心 系列
-            { id: 1, name: "1瓶滾珠瓶 (沁舒/沁涼)", bonus: 15, fund: 25 },
-            { id: 2, name: "5瓶滾珠瓶 (沁舒/沁涼)", bonus: 40, fund: 60 },
-            { id: 3, name: "1瓶涼感霜 (沁樂)", bonus: 30, fund: 50 },
-            { id: 4, name: "3瓶涼感霜 (沁樂)", bonus: 40, fund: 60 },
-            { id: 5, name: "4瓶滾珠+1瓶涼感霜", bonus: 40, fund: 60 },
-            { id: 6, name: "2瓶滾珠+2瓶涼感霜", bonus: 40, fund: 60 },
-            { id: 7, name: "1瓶沁舒+1涼+1霜+2貼布", bonus: 40, fund: 60 },
-            
-            // 花莯然 茶飲 系列
-            { id: 8, name: "1袋12入茶包", bonus: 30, fund: 50 },
-            { id: 9, name: "4袋12入茶包", bonus: 30, fund: 50 },
-            { id: 10, name: "1袋30入茶包", bonus: 40, fund: 60 },
-            { id: 11, name: "2袋30入茶包", bonus: 30, fund: 50 },
-            { id: 12, name: "1盒12入茶包", bonus: 30, fund: 50 },
-            { id: 13, name: "4盒12入茶包", bonus: 30, fund: 50 },
-            
-            // 唐太盅 燉品
-            { id: 14, name: "燉湯買10送2", bonus: 150, fund: 250 },
-            
-            // 唐太盅 滴雞精
-            { id: 15, name: "滴雞精 2入體驗盒", bonus: 30, fund: 50 },
-            { id: 16, name: "滴雞精 12入禮盒", bonus: 100, fund: 200 },
-            
-            // 龜苓膏 禮盒
-            { id: 17, name: "龜苓膏 6入禮盒", bonus: 60, fund: 80 },
-            { id: 18, name: "龜苓膏 9入禮盒", bonus: 60, fund: 80 }
+            { id: 1, name: "花莯然-20入茶禮盒買5送1", bonus: 300, fund: 300 },
+            { id: 2, name: "花莯然-12入茶袋買5送1", bonus: 100, fund: 100 },
+            { id: 3, name: "花莯然-12入禮盒買5送1", bonus: 200, fund: 200 },
+            { id: 4, name: "花莯然-5入足湯盒買5送1", bonus: 200, fund: 200 },
+            { id: 5, name: "花莯然-30入足湯袋買5送1", bonus: 300, fund: 300 },
+            { id: 6, name: "花莯然-足浴袋1個(含加購)", bonus: 200, fund: 200 },
+            { id: 7, name: "花莯然-一條根貼布買5送1", bonus: 50, fund: 50 },
+            { id: 8, name: "花莯然-沁舒滾珠買5送1", bonus: 50, fund: 50 },
+            { id: 9, name: "花莯然-沁涼滾珠買5送1", bonus: 50, fund: 50 },
+            { id: 10, name: "花莯然-沁樂涼感霜買5送1", bonus: 100, fund: 100 },
+            { id: 11, name: "唐太盅-盅湯買10送2", bonus: 150, fund: 150 },
+            { id: 12, name: "唐太盅-龜苓膏6入禮盒", bonus: 50, fund: 50 },
+            { id: 13, name: "唐太盅-龜苓膏9入禮盒", bonus: 50, fund: 50 },
+            { id: 14, name: "唐太盅-滴雞精12入禮盒", bonus: 100, fund: 100 }
         ];
 
-        const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿',  '施孟均'];
+        const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '施孟均'];
 
         const app = initializeApp(config);
         const auth = getAuth(app);
@@ -270,7 +257,7 @@
             ab.innerHTML = ''; ib.innerHTML = '';
             const stats = {}; EMPLOYEES.forEach(n => stats[n] = { b: 0, f: 0, h: false });
             data.forEach(d => {
-                let n = d.emp; if (n === '葉詩涵') n = '黃詩涵'; if (n === '黃晴雯') n = '黃靖雯';
+                let n = d.emp;
                 if (stats[n]) { stats[n].b += d.bonus; stats[n].f += d.fund; stats[n].h = true; }
             });
             Object.entries(stats).sort((a,b) => b[1].b - a[1].b).forEach(([n, v]) => {
@@ -289,7 +276,7 @@
         const renderLeaderboard = (data) => {
             const container = document.getElementById('leaderboardSection'); container.innerHTML = '';
             const bonus = {}; EMPLOYEES.forEach(n => bonus[n] = 0);
-            data.forEach(d => { let n = d.emp; if (n === '葉詩涵') n = '黃詩涵'; if (n === '黃晴雯') n = '黃靖雯'; if (bonus.hasOwnProperty(n)) bonus[n] += d.bonus; });
+            data.forEach(d => { let n = d.emp; if (bonus.hasOwnProperty(n)) bonus[n] += d.bonus; });
             const sorted = Object.entries(bonus).sort((a,b) => b[1] - a[1]);
             [1, 0, 2].forEach(idx => {
                 const item = sorted[idx];
@@ -331,7 +318,6 @@
             lucide.createIcons();
         };
 
-        // --- 彈窗控管 ---
         window.closePwdModal = () => { document.getElementById('pwdModal').classList.add('hidden'); document.getElementById('pwdInput').value = ''; };
         window.openSuccessModal = () => { document.getElementById('successModal').classList.remove('hidden'); lucide.createIcons(); };
         window.closeSuccessModal = () => { document.getElementById('successModal').classList.add('hidden'); };
