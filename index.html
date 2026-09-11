@@ -1,558 +1,384 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    
-    <!-- LINE 預覽控管 -->
-    <title>產品獎金核銷系統-中清店</title>
-    <meta name="description" content="產品銷售獎金-中清店專用管理平台。">
-    <meta property="og:title" content="產品獎金核銷系統-中清店">
-    <meta property="og:description" content="銷售數據管理系統">
-    <meta property="og:type" content="website">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- LINE 預覽控管 -->
+    <title>產品獎金核銷系統-中清店</title>
+    <meta name="description" content="產品銷售獎金-中清店專用管理平台。">
+    <meta property="og:title" content="產品獎金核銷系統-中清店">
+    <meta property="og:description" content="銷售數據管理系統">
+    <meta property="og:type" content="website">
 
-    <!-- Tailwind CSS, Icons & Charts -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Tailwind CSS, Icons & Charts -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <style>
-        body { -webkit-tap-highlight-color: transparent; }
-        .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
-        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
-        
-        .verified-row { background-color: #f0fdf4 !important; }
-        .lock-locked { color: #ef4444; }
-        .lock-unlocked { color: #22c55e; }
-        .chart-container { position: relative; height: 220px; width: 100%; }
-        
-        /* 榮譽動畫 */
-        @keyframes crown-flash {
-            0%, 100% { filter: drop-shadow(0 0 2px #fbbf24); transform: scale(1); }
-            50% { filter: drop-shadow(0 0 8px #f59e0b); transform: scale(1.1); }
-        }
-        .crown-animate { animation: crown-flash 1.5s infinite ease-in-out; color: #fbbf24; }
-        .silver-medal { color: #94a3b8; }
-        .bronze-medal { color: #b45309; }
+    <style>
+        body { -webkit-tap-highlight-color: transparent; }
+        .tab-active { color: #2563eb; border-top: 2px solid #2563eb; }
+        input[type="date"]::-webkit-calendar-picker-indicator { cursor: pointer; }
+        
+        .verified-row { background-color: #f0fdf4 !important; }
+        .lock-locked { color: #ef4444; }
+        .lock-unlocked { color: #22c55e; }
+        .chart-container { position: relative; height: 220px; width: 100%; }
+        
+        /* 榮譽動畫 */
+        @keyframes crown-flash {
+            0%, 100% { filter: drop-shadow(0 0 2px #fbbf24); transform: scale(1); }
+            50% { filter: drop-shadow(0 0 8px #f59e0b); transform: scale(1.1); }
+        }
+        .crown-animate { animation: crown-flash 1.5s infinite ease-in-out; color: #fbbf24; }
+        .silver-medal { color: #94a3b8; }
+        .bronze-medal { color: #b45309; }
 
-        /* 管理員欄位隱私 */
-        .admin-data { display: none !important; }
-        body.is-admin-view .admin-data { display: table-cell !important; }
+        /* 管理員欄位隱私 */
+        .admin-data { display: none !important; }
+        body.is-admin-view .admin-data { display: table-cell !important; }
 
-        /* 成功對話框動畫 */
-        @keyframes modal-pop {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .animate-modal { animation: modal-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-    </style>
+        /* 成功對話框動畫 */
+        @keyframes modal-pop {
+            0% { transform: scale(0.9); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .animate-modal { animation: modal-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+    </style>
 </head>
 <body class="bg-slate-50 min-h-screen pb-32 font-sans text-slate-900">
 
-    <div id="main-app">
-        <!-- Header -->
-        <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
-            <div class="flex items-center gap-2">
-                <i data-lucide="shield-check" class="text-blue-600 w-6 h-6"></i>
-                <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統</h1>
-            </div>
-            <div class="flex gap-2">
-                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg border border-slate-200 shadow-sm transition-colors">
-                    <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
-                </button>
-                <button id="adminToggle" class="p-2 bg-slate-100 rounded-lg text-slate-400 border border-slate-200 transition-colors">
-                    <i data-lucide="eye-off" id="adminIcon" class="w-5 h-5"></i>
-                </button>
-            </div>
-        </header>
+    <div id="main-app">
+        <!-- Header -->
+        <header class="bg-white border-b sticky top-0 z-50 px-4 py-3 flex justify-between items-center shadow-sm">
+            <div class="flex items-center gap-2">
+                <i data-lucide="shield-check" class="text-blue-600 w-6 h-6"></i>
+                <h1 class="text-base font-bold text-slate-800 tracking-tight">產品獎金核銷系統</h1>
+            </div>
+            <div class="flex gap-2">
+                <button id="authBtn" class="p-2 bg-slate-100 rounded-lg border border-slate-200 shadow-sm">
+                    <i data-lucide="lock" id="lockIcon" class="w-5 h-5 lock-locked"></i>
+                </button>
+                <button id="adminToggle" class="p-2 bg-slate-100 rounded-lg text-slate-400 border border-slate-200">
+                    <i data-lucide="eye-off" id="adminIcon" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </header>
 
-        <main class="max-w-md mx-auto p-4">
-            <!-- 申報頁面 -->
-            <div id="reportView" class="space-y-4 animate-in fade-in">
-                <div class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
-                    <h2 class="text-md font-semibold mb-6 flex items-center gap-2 text-slate-700">
-                        <i data-lucide="edit-3" class="w-5 h-5 text-blue-500"></i> 填寫銷售申報
-                    </h2>
-                    <form id="salesForm" class="space-y-5">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">銷售人員</label>
-                            <select id="employee" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20" required>
-                                <option value="">載入中...</option>
-                                <!-- 動態載入 -->
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">銷售日期</label>
-                            <input type="date" id="date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-mono" required>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">產品品項</label>
-                            <select id="product" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none appearance-none" required>
-                                <option value="">選擇產品</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">數量</label>
-                            <select id="quantity" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
-                                <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-                                <option value="4">4</option><option value="5">5</option><option value="10">10</option>
-                            </select>
-                        </div>
-                        <div id="calcPreview" class="hidden bg-blue-50 rounded-2xl p-5 grid grid-cols-2 gap-4 border border-blue-100">
-                            <div><p class="text-[10px] text-blue-600 font-bold uppercase">預計獎金</p><p id="prevBonus" class="text-2xl font-black text-blue-800">$0</p></div>
-                            <div id="prevFundBlock" class="admin-data border-l border-blue-200 pl-4"><p class="text-[10px] text-indigo-600 font-bold uppercase">預計公積金</p><p id="prevFund" class="text-2xl font-black text-indigo-800">$0</p></div>
-                        </div>
-                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-5 rounded-2xl shadow-xl shadow-blue-100 active:scale-95 transition-all text-lg">確認提交申報</button>
-                    </form>
-                </div>
-            </div>
+        <main class="max-w-md mx-auto p-4">
+            <!-- 申報頁面 -->
+            <div id="reportView" class="space-y-4 animate-in fade-in">
+                <div class="bg-white rounded-3xl shadow-sm p-6 border border-slate-200">
+                    <h2 class="text-md font-semibold mb-6 flex items-center gap-2 text-slate-700">
+                        <i data-lucide="edit-3" class="w-5 h-5 text-blue-500"></i> 填寫銷售申報
+                    </h2>
+                    <form id="salesForm" class="space-y-5">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">銷售人員</label>
+                            <select id="employee" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-blue-500/20" required>
+                                <option value="">選擇人員</option>
+                                <option>莊秉豐</option><option>高鈺雯</option><option>栢政權</option>
+                                <option>黃郁心</option><option>賴彥廷</option><option>黃詩涵</option>
+                                <comment-tag id="1"><option>紀懿芯</option><option>施孟均</option></comment-tag id="1" text="<option>紀懿芯</option><option>施孟均</option><option>梁宇翔</option>
 
-            <!-- 統計頁面 -->
-            <div id="statsView" class="hidden space-y-4 animate-in fade-in">
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
-                    <div class="grid grid-cols-2 gap-2 text-center">
-                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
-                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
-                    </div>
-                </div>
-                <div id="leaderboardSection" class="grid grid-cols-3 gap-2"></div>
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
-                        <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-blue-400"></i> 人員獎金累計總表</h3>
-                    </div>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-[11px]">
-                            <thead class="bg-slate-50 border-b text-slate-500 font-bold">
-                                <tr><th class="p-3">人員</th><th class="p-3 text-right">獎金</th><th class="p-3 text-right text-indigo-500 admin-data">公積金</th></tr>
-                            </thead>
-                            <tbody id="personSummaryBody" class="divide-y divide-slate-100"></tbody>
-                            <tbody id="noDataBody" class="bg-slate-50/50 border-t-2 border-slate-100"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><div class="chart-container"><canvas id="posChart"></canvas></div></div>
-                <div class="bg-blue-900 rounded-2xl p-5 text-white shadow-xl shadow-blue-100"><h3 class="text-sm font-bold flex items-center gap-2 mb-4 text-amber-300"><i data-lucide="layout-list" class="w-4 h-4"></i> 週期銷售總表</h3><div id="periodSummaryContainer" class="space-y-2 text-[11px]"></div></div>
-                <div class="px-1 flex justify-between items-end mt-4 text-[11px] font-bold text-slate-500 italic"><h2>POS 核對明細</h2><p id="authStatusLabel" class="text-red-500">核銷需要權限</p></div>
-                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-2"><div class="overflow-x-auto"><table class="w-full text-left text-[11px]"><thead class="bg-slate-50 border-b text-slate-500 font-bold"><tr><th class="p-3 text-center">核</th><th class="p-3">人員</th><th class="p-3">日期/品項</th><th class="p-3 text-right">金額</th></tr></thead><tbody id="auditTableBody" class="divide-y divide-slate-100"></tbody></table></div></div>
-                
-                <!-- 後台人員管理 (解鎖後顯示) -->
-                <div id="adminEmpSection" class="hidden bg-white p-5 rounded-2xl shadow-sm border border-slate-200 mt-6 mb-6">
-                    <h3 class="text-sm font-bold text-slate-700 mb-4 flex items-center gap-2">
-                        <i data-lucide="users-cog" class="w-5 h-5 text-indigo-500"></i> 後台人員管理
-                    </h3>
-                    <div class="flex gap-2 mb-4">
-                        <input type="text" id="newEmpName" placeholder="輸入新人員姓名" class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500/20">
-                        <button id="addEmpBtn" onclick="window.addEmployee()" class="bg-indigo-600 text-white px-5 py-3 rounded-xl text-sm font-bold active:scale-95 transition-all shadow-md shadow-indigo-200">新增</button>
-                    </div>
-                    <div id="empManageList" class="flex flex-wrap gap-2">
-                        <!-- 動態載入人員標籤 -->
-                    </div>
-                </div>
+將「梁宇翔」加入 HTML 表單中的人員下拉選單選項，讓他可以在新增紀錄時被選取。" type="suggestion">
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">銷售日期</label>
+                            <input type="date" id="date" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none font-mono" required>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">產品品項</label>
+                            <select id="product" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none appearance-none" required>
+                                <option value="">選擇產品</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-2 uppercase">數量</label>
+                            <select id="quantity" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none">
+                                <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+                                <option value="4">4</option><option value="5">5</option><option value="10">10</option>
+                            </select>
+                        </div>
+                        <div id="calcPreview" class="hidden bg-blue-50 rounded-2xl p-5 grid grid-cols-2 gap-4 border border-blue-100">
+                            <div><p class="text-[10px] text-blue-600 font-bold uppercase">預計獎金</p><p id="prevBonus" class="text-2xl font-black text-blue-800">$0</p></div>
+                            <div id="prevFundBlock" class="admin-data border-l border-blue-200 pl-4"><p class="text-[10px] text-indigo-600 font-bold uppercase">預計公積金</p><p id="prevFund" class="text-2xl font-black text-indigo-800">$0</p></div>
+                        </div>
+                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 text-white font-bold py-5 rounded-2xl shadow-xl shadow-blue-100 active:scale-95 transition-all text-lg">確認提交申報</button>
+                    </form>
+                </div>
+            </div>
 
-                <footer class="text-center py-8 text-slate-400 text-[10px] tracking-widest border-t border-slate-100">© 原點數位科技</footer>
-            </div>
-        </main>
-    </div>
+            <!-- 統計頁面 -->
+            <div id="statsView" class="hidden space-y-4 animate-in fade-in">
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                    <div class="grid grid-cols-2 gap-2 text-center">
+                        <input type="date" id="filterStart" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
+                        <input type="date" id="filterEnd" class="text-sm p-2 bg-slate-50 border rounded-lg outline-none font-mono">
+                    </div>
+                </div>
+                <div id="leaderboardSection" class="grid grid-cols-3 gap-2"></div>
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="bg-slate-800 px-4 py-3 flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><i data-lucide="users" class="w-4 h-4 text-blue-400"></i> 人員獎金累計總表</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-[11px]">
+                            <thead class="bg-slate-50 border-b text-slate-500 font-bold">
+                                <tr><th class="p-3">人員</th><th class="p-3 text-right">獎金</th><th class="p-3 text-right text-indigo-500 admin-data">公積金</th></tr>
+                            </thead>
+                            <tbody id="personSummaryBody" class="divide-y divide-slate-100"></tbody>
+                            <tbody id="noDataBody" class="bg-slate-50/50 border-t-2 border-slate-100"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200"><div class="chart-container"><canvas id="posChart"></canvas></div></div>
+                <div class="bg-blue-900 rounded-2xl p-5 text-white shadow-xl shadow-blue-100"><h3 class="text-sm font-bold flex items-center gap-2 mb-4 text-amber-300"><i data-lucide="layout-list" class="w-4 h-4"></i> 週期銷售總表</h3><div id="periodSummaryContainer" class="space-y-2 text-[11px]"></div></div>
+                <div class="px-1 flex justify-between items-end mt-4 text-[11px] font-bold text-slate-500 italic"><h2>POS 核對明細</h2><p id="authStatusLabel" class="text-red-500">核銷需要權限</p></div>
+                <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-6"><div class="overflow-x-auto"><table class="w-full text-left text-[11px]"><thead class="bg-slate-50 border-b text-slate-500 font-bold"><tr><th class="p-3 text-center">核</th><th class="p-3">人員</th><th class="p-3">日期/品項</th><th class="p-3 text-right">金額</th></tr></thead><tbody id="auditTableBody" class="divide-y divide-slate-100"></tbody></table></div></div>
+                <footer class="text-center py-8 text-slate-400 text-[10px] tracking-widest border-t border-slate-100">© 原點數位科技</footer>
+            </div>
+        </main>
+    </div>
 
-    <!-- 成功對話框 -->
-    <div id="successModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl text-center animate-modal relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
-            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
-                <i data-lucide="check-circle" class="w-12 h-12"></i>
-            </div>
-            <h3 class="text-xl font-black text-slate-800 mb-2">申報成功</h3>
-            <p class="text-sm text-slate-500 mb-8 leading-relaxed">您的銷售紀錄已正確存入雲端，並更新至統計報表中。</p>
-            <button onclick="window.closeSuccessModal()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all">
-                好的，我知道了
-            </button>
-        </div>
-    </div>
+    <!-- 成功對話框 -->
+    <div id="successModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[200] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl text-center animate-modal relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+            <div class="w-20 h-20 bg-green-50 text-green-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                <i data-lucide="check-circle" class="w-12 h-12"></i>
+            </div>
+            <h3 class="text-xl font-black text-slate-800 mb-2">申報成功</h3>
+            <p class="text-sm text-slate-500 mb-8 leading-relaxed">您的銷售紀錄已正確存入雲端，並更新至統計報表中。</p>
+            <button onclick="window.closeSuccessModal()" class="w-full py-4 bg-blue-600 text-white font-bold rounded-2xl shadow-lg shadow-blue-200 active:scale-95 transition-all">
+                好的，我知道了
+            </button>
+        </div>
+    </div>
 
-    <!-- 驗證對話框 -->
-    <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
-        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl animate-in zoom-in duration-200">
-            <h3 class="text-center font-bold text-slate-800 mb-4 text-sm uppercase">管理者驗證</h3>
-            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-2xl mb-4 text-center text-xl font-bold outline-none bg-slate-50 transition-colors">
-            <div class="flex gap-2">
-                <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-xl text-slate-500 font-bold active:bg-slate-200">取消</button>
-                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-xl text-white font-bold shadow-lg">確認</button>
-            </div>
-        </div>
-    </div>
+    <!-- 驗證對話框 -->
+    <div id="pwdModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm z-[100] flex items-center justify-center p-6">
+        <div class="bg-white w-full max-w-xs rounded-3xl p-6 shadow-2xl animate-in zoom-in duration-200">
+            <h3 class="text-center font-bold text-slate-800 mb-4 text-sm uppercase">管理者驗證</h3>
+            <input type="password" id="pwdInput" placeholder="請輸入驗證" class="w-full p-4 border rounded-2xl mb-4 text-center text-xl font-bold outline-none bg-slate-50">
+            <div class="flex gap-2">
+                <button onclick="window.closePwdModal()" class="flex-1 py-3 bg-slate-100 rounded-xl text-slate-500 font-bold active:bg-slate-200">取消</button>
+                <button id="verifyBtn" class="flex-1 py-3 bg-blue-600 rounded-xl text-white font-bold shadow-lg">確認</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- Bottom Nav -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t flex justify-around items-center py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
-        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1"><i data-lucide="plus-circle" class="w-6 h-6"></i><span class="text-[10px] font-bold">申報</span></button>
-        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1"><i data-lucide="bar-chart-3" class="w-6 h-6"></i><span class="text-[10px] font-bold">報表統計</span></button>
-    </nav>
+    <!-- Bottom Nav -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t flex justify-around items-center py-3 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] z-50">
+        <button onclick="switchTab('report')" id="btnReport" class="flex flex-col items-center gap-1 tab-active flex-1"><i data-lucide="plus-circle" class="w-6 h-6"></i><span class="text-[10px] font-bold">申報</span></button>
+        <button onclick="switchTab('stats')" id="btnStats" class="flex flex-col items-center gap-1 text-slate-400 flex-1"><i data-lucide="bar-chart-3" class="w-6 h-6"></i><span class="text-[10px] font-bold">報表統計</span></button>
+    </nav>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
-        const config = {
-            apiKey: "AIzaSyDO9bM_lX6XrRU_nUb80J5lBNbR2jhpUS0",
-            authDomain: "product-3815d.firebaseapp.com",
-            projectId: "product-3815d",
-            storageBucket: "product-3815d.firebasestorage.app",
-            messagingSenderId: "741660301144",
-            appId: "1:741660301144:web:dcb6918c45ba5e1442372d"
-        };
+        const config = {
+            apiKey: "AIzaSyDO9bM_lX6XrRU_nUb80J5lBNbR2jhpUS0",
+            authDomain: "product-3815d.firebaseapp.com",
+            projectId: "product-3815d",
+            storageBucket: "product-3815d.firebasestorage.app",
+            messagingSenderId: "741660301144",
+            appId: "1:741660301144:web:dcb6918c45ba5e1442372d"
+        };
 
-        const PRODUCTS = [
-            { id: 1, name: "花莯然-20入茶禮盒買5送1", bonus: 300, fund: 300 },
-            { id: 2, name: "花莯然-12入茶袋買5送1", bonus: 100, fund: 100 },
-            { id: 3, name: "花莯然-12入禮盒買5送1", bonus: 200, fund: 200 },
-            { id: 4, name: "花莯然-5入足湯盒買5送1", bonus: 200, fund: 200 },
-            { id: 5, name: "花莯然-30入足湯袋買5送1", bonus: 300, fund: 300 },
-            { id: 6, name: "花莯然-足浴袋1個(含加購)", bonus: 200, fund: 200 },
-            { id: 7, name: "花莯然-一條根貼布買5送1", bonus: 50, fund: 50 },
-            { id: 8, name: "花莯然-沁舒滾珠買5送1", bonus: 50, fund: 50 },
-            { id: 9, name: "花莯然-沁涼滾珠買5送1", bonus: 50, fund: 50 },
-            { id: 10, name: "花莯然-沁樂涼感霜買5送1", bonus: 100, fund: 100 },
-            { id: 11, name: "唐太盅-盅湯買10送2", bonus: 150, fund: 150 },
-            { id: 12, name: "唐太盅-龜苓膏6入禮盒", bonus: 50, fund: 50 },
-            { id: 13, name: "唐太盅-龜苓膏9入禮盒", bonus: 50, fund: 50 },
-            { id: 14, name: "唐太盅-滴雞精12入禮盒", bonus: 100, fund: 100 }
-        ];
+        // --- 2026.05.01 新版獎金對應 ---
+        const PRODUCTS = [
+            { id: 1, name: "花莯然-20入茶禮盒買5送1", bonus: 300, fund: 300 },
+            { id: 2, name: "花莯然-12入茶袋買5送1", bonus: 100, fund: 100 },
+            { id: 3, name: "花莯然-12入禮盒買5送1", bonus: 200, fund: 200 },
+            { id: 4, name: "花莯然-5入足湯盒買5送1", bonus: 200, fund: 200 },
+            { id: 5, name: "花莯然-30入足湯袋買5送1", bonus: 300, fund: 300 },
+            { id: 6, name: "花莯然-足浴袋1個(含加購)", bonus: 200, fund: 200 },
+            { id: 7, name: "花莯然-一條根貼布買5送1", bonus: 50, fund: 50 },
+            { id: 8, name: "花莯然-沁舒滾珠買5送1", bonus: 50, fund: 50 },
+            { id: 9, name: "花莯然-沁涼滾珠買5送1", bonus: 50, fund: 50 },
+            { id: 10, name: "花莯然-沁樂涼感霜買5送1", bonus: 100, fund: 100 },
+            { id: 11, name: "唐太盅-盅湯買10送2", bonus: 150, fund: 150 },
+            { id: 12, name: "唐太盅-龜苓膏6入禮盒", bonus: 50, fund: 50 },
+            { id: 13, name: "唐太盅-龜苓膏9入禮盒", bonus: 50, fund: 50 },
+            { id: 14, name: "唐太盅-滴雞精12入禮盒", bonus: 100, fund: 100 }
+        ];
 
-        let EMPLOYEES = []; // 改為動態陣列
+        <comment-tag id="2">const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '施孟均'];</comment-tag id="2" text="const EMPLOYEES = ['栢政權', '莊雅筑', '莊秉豐', '黃靖雯', '賴彥廷', '黃詩涵', '黃品睿', '施孟均', '梁宇翔'];
 
-        // 確保在協作環境中使用系統提供的設定，以獲得正確的存取權限
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : config;
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sales-v3-final';
+在 JavaScript 常數陣列中加入「梁宇翔」，確保報表與排行榜系統能正確統計並顯示該人員的資料與銷售明細。" type="suggestion">
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = 'sales-v3-final';
 
-        let isAdmin = false, isUnlocked = false, rawData = [], posChart = null, unsubscribe = null, unsubscribeEmp = null;
+        let isAdmin = false, isUnlocked = false, rawData = [], posChart = null, unsubscribe = null;
 
-        const initForm = () => {
-            const ps = document.getElementById('product'); ps.innerHTML = '<option value="">選擇產品</option>';
-            PRODUCTS.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} ($${p.bonus})`; ps.appendChild(o); });
-            const now = new Date();
-            const fDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-            const tDay = now.toISOString().split('T')[0];
-            document.getElementById('date').value = tDay;
-            document.getElementById('filterStart').value = fDay;
-            document.getElementById('filterEnd').value = tDay;
-        };
+        const initForm = () => {
+            const ps = document.getElementById('product'); ps.innerHTML = '<option value="">選擇產品</option>';
+            PRODUCTS.forEach(p => { const o = document.createElement('option'); o.value = p.id; o.textContent = `${p.name} ($${p.bonus})`; ps.appendChild(o); });
+            const now = new Date();
+            const fDay = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+            const tDay = now.toISOString().split('T')[0];
+            document.getElementById('date').value = tDay;
+            document.getElementById('filterStart').value = fDay;
+            document.getElementById('filterEnd').value = tDay;
+        };
 
-        const startApp = async () => {
-            onAuthStateChanged(auth, (user) => { 
-                if (user) {
-                    loadEmployees();
-                    loadData();
-                }
-            });
-            try {
-                // 加入環境 token 驗證，解決連線被拒絕的問題
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("授權登入失敗:", error);
-                document.getElementById('employee').innerHTML = '<option value="">(系統錯誤) 無法驗證身份</option>';
-            }
-        };
+        const startApp = async () => {
+            await signInAnonymously(auth);
+            onAuthStateChanged(auth, (user) => { if (user) loadData(); });
+        };
 
-        const loadEmployees = () => {
-            const empQuery = query(collection(db, 'artifacts', appId, 'public', 'data', 'employees'));
-            if (unsubscribeEmp) unsubscribeEmp();
-            
-            unsubscribeEmp = onSnapshot(empQuery, (sn) => {
-                let empsData = sn.docs.map(d => ({id: d.id, name: d.data().name})).sort((a,b) => (a.ts || 0) - (b.ts || 0));
-                
-                // 初次載入時自動寫入預設名單(如為空)
-                if (sn.empty && EMPLOYEES.length === 0) {
-                    const defaultEmps = ['莊秉豐', '高鈺雯', '栢政權', '黃郁心', '賴彥廷', '黃詩涵', '紀懿芯', '施孟均'];
-                    
-                    // 先在本地端將畫面填補上，避免卡住
-                    empsData = defaultEmps.map((name, idx) => ({ id: 'temp-'+idx, name }));
-                    
-                    // 背景嘗試寫入資料庫
-                    defaultEmps.forEach(name => {
-                        try { addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'employees'), { name, ts: Date.now() }); } catch(e) { }
-                    });
-                }
+        const loadData = () => {
+            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
+            if (unsubscribe) unsubscribe();
+            unsubscribe = onSnapshot(q, (sn) => {
+                rawData = sn.docs.map(d => ({ docId: d.id, ...d.data() }));
+                if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
+            });
+        };
 
-                EMPLOYEES = empsData.map(e => e.name);
+        window.processAndRender = () => {
+            const s = document.getElementById('filterStart').value, e = document.getElementById('filterEnd').value;
+            const filtered = rawData.filter(x => (!s || !e) ? true : (x.date >= s && x.date <= e));
+            const valid = filtered.filter(x => !x.deleted);
+            renderLeaderboard(valid);
+            renderPeriodSummary(valid);
+            renderPersonSummary(valid);
+            renderAuditTable(filtered.sort((a,b) => b.ts - a.ts));
+            const canvas = document.getElementById('posChart');
+            if (canvas && canvas.offsetParent !== null) renderPosChart(valid, s, e);
+        };
 
-                // 更新下拉選單
-                const empSelect = document.getElementById('employee');
-                const currentVal = empSelect.value;
-                empSelect.innerHTML = '<option value="">選擇人員</option>';
-                empsData.forEach(e => {
-                    empSelect.innerHTML += `<option value="${e.name}">${e.name}</option>`;
-                });
-                if (EMPLOYEES.includes(currentVal)) empSelect.value = currentVal;
+        const renderPersonSummary = (data) => {
+            const ab = document.getElementById('personSummaryBody'), ib = document.getElementById('noDataBody');
+            ab.innerHTML = ''; ib.innerHTML = '';
+            const stats = {}; EMPLOYEES.forEach(n => stats[n] = { b: 0, f: 0, h: false });
+            data.forEach(d => {
+                let n = d.emp;
+                if (stats[n]) { stats[n].b += d.bonus; stats[n].f += d.fund; stats[n].h = true; }
+            });
+            Object.entries(stats).sort((a,b) => b[1].b - a[1].b).forEach(([n, v]) => {
+                const tr = document.createElement('tr');
+                if (v.h && v.b > 0) {
+                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}</td><td class="p-3 text-right font-black text-blue-600">$${v.b.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data">$${v.f.toLocaleString()}</td>`;
+                    ab.appendChild(tr);
+                } else {
+                    tr.className = "opacity-30 grayscale";
+                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase tracking-tighter">No Record</td><td class="p-3 text-right text-slate-300 admin-data">$0</td>`;
+                    ib.appendChild(tr);
+                }
+            });
+        };
 
-                // 更新後台管理列表
-                const manageList = document.getElementById('empManageList');
-                if (manageList) {
-                    manageList.innerHTML = empsData.map(e => `
-                        <div class="flex items-center bg-slate-100 rounded-lg pl-3 pr-1 py-1 gap-2 border border-slate-200">
-                            <span class="text-sm font-bold text-slate-700">${e.name}</span>
-                            <button type="button" onclick="window.confirmDeleteEmployee(this, '${e.id}')" data-confirm="no" class="p-1.5 bg-slate-200 text-slate-500 rounded-md hover:bg-slate-300 transition-colors flex items-center gap-1 text-[10px] font-bold">
-                                <i data-lucide="x" class="w-3 h-3"></i>
-                            </button>
-                        </div>
-                    `).join('');
-                    lucide.createIcons();
-                }
+        const renderLeaderboard = (data) => {
+            const container = document.getElementById('leaderboardSection'); container.innerHTML = '';
+            const bonus = {}; EMPLOYEES.forEach(n => bonus[n] = 0);
+            data.forEach(d => { let n = d.emp; if (bonus.hasOwnProperty(n)) bonus[n] += d.bonus; });
+            const sorted = Object.entries(bonus).sort((a,b) => b[1] - a[1]);
+            [1, 0, 2].forEach(idx => {
+                const item = sorted[idx];
+                if (!item || item[1] === 0) { container.innerHTML += `<div class="bg-white p-2 rounded-2xl border border-dashed text-center text-slate-200 py-6 text-[9px] italic flex items-center justify-center">從缺</div>`; return; }
+                const [n, b] = item; let style = "bg-white", icon = '', label = '';
+                if (idx === 0) { style = "bg-amber-50 border-amber-200 -mt-2 shadow-lg scale-110 z-20"; icon = '<i data-lucide="crown" class="w-6 h-6 crown-animate mx-auto mb-1"></i>'; label = "第一名"; }
+                else if (idx === 1) { style = "bg-slate-50 border-slate-200 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 silver-medal mx-auto mb-1"></i>'; label = "第二名"; }
+                else { style = "bg-orange-50 border-orange-100 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 bronze-medal mx-auto mb-1"></i>'; label = "第三名"; }
+                container.innerHTML += `<div class="${style} p-2 rounded-2xl border text-center relative overflow-hidden transition-all"><div class="text-[9px] font-bold text-slate-400 mb-1">${label}</div>${icon}<div class="text-xs font-black text-slate-800 truncate">${n}</div><div class="text-[10px] font-bold text-blue-600 mt-1">$${b.toLocaleString()}</div></div>`;
+            });
+            lucide.createIcons();
+        };
 
-                if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
-            }, (error) => {
-                console.error("讀取名單失敗:", error);
-                document.getElementById('employee').innerHTML = '<option value="">連線異常，請重新整理</option>';
-            });
-        };
+        const renderPosChart = (data, start, end) => {
+            const ctx = document.getElementById('posChart').getContext('2d'); if (posChart) posChart.destroy();
+            const labels = []; let curr = new Date(start); const stop = new Date(end);
+            while(curr <= stop) { labels.push(curr.toISOString().split('T')[0]); curr.setDate(curr.getDate() + 1); }
+            const map = {}; data.forEach(d => map[d.date] = (map[d.date] || 0) + d.bonus);
+            posChart = new Chart(ctx, { type: 'line', data: { labels: labels.map(d => d.slice(5)), datasets: [{ label: '獎金', data: labels.map(d => map[d] || 0), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } } });
+        };
 
-        const loadData = () => {
-            const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'));
-            if (unsubscribe) unsubscribe();
-            unsubscribe = onSnapshot(q, (sn) => {
-                rawData = sn.docs.map(d => ({ docId: d.id, ...d.data() }));
-                if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
-            });
-        };
+        const renderPeriodSummary = (data) => {
+            const container = document.getElementById('periodSummaryContainer');
+            const summary = data.reduce((acc, curr) => { if (!acc[curr.prodName]) acc[curr.prodName] = { q: 0, b: 0 }; acc[curr.prodName].q += curr.qty; acc[curr.prodName].b += curr.bonus; return acc; }, {});
+            const entries = Object.entries(summary).sort((a,b) => b[1].q - a[1].q);
+            if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">Empty</p>`; return; }
+            container.innerHTML = entries.map(([n, v]) => `<div class="flex justify-between items-center py-2 border-b border-blue-800/40 text-[12px]"><div class="flex-1 font-medium">${n}</div><div class="flex gap-3 items-center"><span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${v.q}</span><span class="text-blue-200 font-bold w-14 text-right">$${v.b.toLocaleString()}</span></div></div>`).join('');
+            const tQ = data.reduce((s, c) => s + c.qty, 0), tB = data.reduce((s, c) => s + c.bonus, 0);
+            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
+        };
 
-        window.processAndRender = () => {
-            const s = document.getElementById('filterStart').value, e = document.getElementById('filterEnd').value;
-            const filtered = rawData.filter(x => (!s || !e) ? true : (x.date >= s && x.date <= e));
-            const valid = filtered.filter(x => !x.deleted);
-            renderLeaderboard(valid);
-            renderPeriodSummary(valid);
-            renderPersonSummary(valid);
-            renderAuditTable(filtered.sort((a,b) => b.ts - a.ts));
-            const canvas = document.getElementById('posChart');
-            if (canvas && canvas.offsetParent !== null) renderPosChart(valid, s, e);
-        };
+        const renderAuditTable = (data) => {
+            const body = document.getElementById('auditTableBody'); body.innerHTML = '';
+            data.forEach(item => {
+                const tr = document.createElement('tr'); if (item.verified) tr.className = "verified-row";
+                tr.innerHTML = `<td class="p-3 text-center"><input type="checkbox" ${item.verified ? 'checked' : ''} ${isUnlocked ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"></td><td class="p-3"><div class="font-bold text-slate-700 text-xs">${item.emp}</div></td><td class="p-3"><div class="text-[9px] font-mono text-slate-400 mb-0.5">${item.date}</div><div class="text-[11px] leading-tight">${item.prodName}</div><div class="text-[10px] font-bold text-blue-500 mt-0.5">x${item.qty}</div></td><td class="p-3 text-right font-bold text-xs">$${item.bonus.toLocaleString()}</td>`;
+                body.appendChild(tr);
+            });
+            lucide.createIcons();
+        };
 
-        const renderPersonSummary = (data) => {
-            const ab = document.getElementById('personSummaryBody'), ib = document.getElementById('noDataBody');
-            ab.innerHTML = ''; ib.innerHTML = '';
-            const stats = {}; 
-            // 結合現有人員與歷史出現過的人員
-            const allNames = new Set([...EMPLOYEES, ...data.map(d => d.emp)]);
-            allNames.forEach(n => stats[n] = { b: 0, f: 0, h: false, isActive: EMPLOYEES.includes(n) });
-            
-            data.forEach(d => {
-                let n = d.emp;
-                if (stats[n]) { stats[n].b += d.bonus; stats[n].f += d.fund; stats[n].h = true; }
-            });
-            
-            Object.entries(stats).sort((a,b) => b[1].b - a[1].b).forEach(([n, v]) => {
-                const tr = document.createElement('tr');
-                if (v.h && v.b > 0) {
-                    const tag = v.isActive ? '' : '<span class="ml-1 text-[8px] bg-red-100 text-red-500 px-1 py-0.5 rounded">已刪除</span>';
-                    tr.innerHTML = `<td class="p-3 font-bold text-slate-700">${n}${tag}</td><td class="p-3 text-right font-black text-blue-600">$${v.b.toLocaleString()}</td><td class="p-3 text-right font-bold text-indigo-500 admin-data">$${v.f.toLocaleString()}</td>`;
-                    ab.appendChild(tr);
-                } else if (v.isActive) {
-                    tr.className = "opacity-30 grayscale";
-                    tr.innerHTML = `<td class="p-3 font-medium text-slate-400 italic">${n}</td><td class="p-3 text-right text-[10px] text-slate-300 font-bold uppercase tracking-tighter">No Record</td><td class="p-3 text-right text-slate-300 admin-data">$0</td>`;
-                    ib.appendChild(tr);
-                }
-            });
-        };
+        window.closePwdModal = () => { document.getElementById('pwdModal').classList.add('hidden'); document.getElementById('pwdInput').value = ''; };
+        window.openSuccessModal = () => { document.getElementById('successModal').classList.remove('hidden'); lucide.createIcons(); };
+        window.closeSuccessModal = () => { document.getElementById('successModal').classList.add('hidden'); };
+        
+        window.verifyPwd = () => { if (document.getElementById('pwdInput').value === '1016') { isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender(); } else { alert("錯誤"); document.getElementById('pwdInput').value = ''; } };
+        document.getElementById('verifyBtn').onclick = window.verifyPwd;
 
-        const renderLeaderboard = (data) => {
-            const container = document.getElementById('leaderboardSection'); container.innerHTML = '';
-            const bonus = {}; 
-            const allNames = new Set([...EMPLOYEES, ...data.map(d => d.emp)]);
-            allNames.forEach(n => bonus[n] = 0);
-            
-            data.forEach(d => { let n = d.emp; if (bonus.hasOwnProperty(n)) bonus[n] += d.bonus; });
-            const sorted = Object.entries(bonus).sort((a,b) => b[1] - a[1]);
-            [1, 0, 2].forEach(idx => {
-                const item = sorted[idx];
-                if (!item || item[1] === 0) { container.innerHTML += `<div class="bg-white p-2 rounded-2xl border border-dashed text-center text-slate-200 py-6 text-[9px] italic flex items-center justify-center">從缺</div>`; return; }
-                const [n, b] = item; let style = "bg-white", icon = '', label = '';
-                if (idx === 0) { style = "bg-amber-50 border-amber-200 -mt-2 shadow-lg scale-110 z-20"; icon = '<i data-lucide="crown" class="w-6 h-6 crown-animate mx-auto mb-1"></i>'; label = "第一名"; }
-                else if (idx === 1) { style = "bg-slate-50 border-slate-200 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 silver-medal mx-auto mb-1"></i>'; label = "第二名"; }
-                else { style = "bg-orange-50 border-orange-100 z-10"; icon = '<i data-lucide="medal" class="w-5 h-5 bronze-medal mx-auto mb-1"></i>'; label = "第三名"; }
-                container.innerHTML += `<div class="${style} p-2 rounded-2xl border text-center relative overflow-hidden transition-all"><div class="text-[9px] font-bold text-slate-400 mb-1">${label}</div>${icon}<div class="text-xs font-black text-slate-800 truncate">${n}</div><div class="text-[10px] font-bold text-blue-600 mt-1">$${b.toLocaleString()}</div></div>`;
-            });
-            lucide.createIcons();
-        };
+        window.toggleVerify = async (id, s) => { if (isUnlocked) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', id), { verified: s }); };
 
-        const renderPosChart = (data, start, end) => {
-            const ctx = document.getElementById('posChart').getContext('2d'); if (posChart) posChart.destroy();
-            const labels = []; let curr = new Date(start); const stop = new Date(end);
-            while(curr <= stop) { labels.push(curr.toISOString().split('T')[0]); curr.setDate(curr.getDate() + 1); }
-            const map = {}; data.forEach(d => map[d.date] = (map[d.date] || 0) + d.bonus);
-            posChart = new Chart(ctx, { type: 'line', data: { labels: labels.map(d => d.slice(5)), datasets: [{ label: '獎金', data: labels.map(d => map[d] || 0), borderColor: '#2563eb', backgroundColor: 'rgba(37, 99, 235, 0.1)', borderWidth: 2, fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { font: { size: 9 } } }, x: { grid: { display: false }, ticks: { font: { size: 9 } } } } } });
-        };
+        window.switchTab = (tab) => {
+            const r = document.getElementById('reportView'), s = document.getElementById('statsView');
+            const br = document.getElementById('btnReport'), bs = document.getElementById('btnStats');
+            if (tab === 'report') { r.classList.remove('hidden'); s.classList.add('hidden'); br.classList.add('tab-active'); br.classList.remove('text-slate-400'); bs.classList.remove('tab-active'); bs.classList.add('text-slate-400'); }
+            else { r.classList.add('hidden'); s.classList.remove('hidden'); bs.classList.add('tab-active'); bs.classList.remove('text-slate-400'); br.classList.remove('tab-active'); br.classList.add('text-slate-400'); processAndRender(); }
+        };
 
-        const renderPeriodSummary = (data) => {
-            const container = document.getElementById('periodSummaryContainer');
-            const summary = data.reduce((acc, curr) => { if (!acc[curr.prodName]) acc[curr.prodName] = { q: 0, b: 0 }; acc[curr.prodName].q += curr.qty; acc[curr.prodName].b += curr.bonus; return acc; }, {});
-            const entries = Object.entries(summary).sort((a,b) => b[1].q - a[1].q);
-            if (entries.length === 0) { container.innerHTML = `<p class="text-center py-4 opacity-50 italic">Empty</p>`; return; }
-            container.innerHTML = entries.map(([n, v]) => `<div class="flex justify-between items-center py-2 border-b border-blue-800/40 text-[12px]"><div class="flex-1 font-medium">${n}</div><div class="flex gap-3 items-center"><span class="bg-blue-800 px-1.5 py-0.5 rounded font-mono">${v.q}</span><span class="text-blue-200 font-bold w-14 text-right">$${v.b.toLocaleString()}</span></div></div>`).join('');
-            const tQ = data.reduce((s, c) => s + c.qty, 0), tB = data.reduce((s, c) => s + c.bonus, 0);
-            container.innerHTML += `<div class="flex justify-between items-center pt-3 text-sm font-black text-amber-300"><div>週期合計</div><div class="flex gap-4"><span>${tQ} 件</span><span>$${tB.toLocaleString()}</span></div></div>`;
-        };
+        function updateLockUI() {
+            const icon = document.getElementById('lockIcon'), label = document.getElementById('authStatusLabel');
+            if (isUnlocked) { icon.setAttribute('data-lucide', 'unlock'); icon.classList.replace('lock-locked', 'lock-unlocked'); label.textContent = "驗證授權通過"; label.classList.replace('text-red-500', 'text-green-600'); }
+            else { icon.setAttribute('data-lucide', 'lock'); icon.classList.replace('lock-unlocked', 'lock-locked'); label.textContent = "核銷需要權限"; label.classList.replace('text-green-600', 'text-red-500'); }
+            lucide.createIcons();
+        }
 
-        const renderAuditTable = (data) => {
-            const body = document.getElementById('auditTableBody'); body.innerHTML = '';
-            data.forEach(item => {
-                const tr = document.createElement('tr'); if (item.verified) tr.className = "verified-row";
-                tr.innerHTML = `<td class="p-3 text-center"><input type="checkbox" ${item.verified ? 'checked' : ''} ${isUnlocked ? '' : 'disabled'} onchange="window.toggleVerify('${item.docId}', this.checked)" class="w-5 h-5 rounded border-slate-300 text-blue-600 cursor-pointer"></td><td class="p-3"><div class="font-bold text-slate-700 text-xs">${item.emp}</div></td><td class="p-3"><div class="text-[9px] font-mono text-slate-400 mb-0.5">${item.date}</div><div class="text-[11px] leading-tight">${item.prodName}</div><div class="text-[10px] font-bold text-blue-500 mt-0.5">x${item.qty}</div></td><td class="p-3 text-right font-bold text-xs">$${item.bonus.toLocaleString()}</td>`;
-                body.appendChild(tr);
-            });
-            lucide.createIcons();
-        };
+        document.getElementById('authBtn').onclick = () => { if (isUnlocked) { isUnlocked = false; updateLockUI(); processAndRender(); } else { document.getElementById('pwdModal').classList.remove('hidden'); document.getElementById('pwdInput').focus(); } };
 
-        window.closePwdModal = () => { document.getElementById('pwdModal').classList.add('hidden'); document.getElementById('pwdInput').value = ''; };
-        window.openSuccessModal = () => { document.getElementById('successModal').classList.remove('hidden'); lucide.createIcons(); };
-        window.closeSuccessModal = () => { document.getElementById('successModal').classList.add('hidden'); };
-        
-        window.verifyPwd = () => { 
-            const pwdInput = document.getElementById('pwdInput');
-            if (pwdInput.value === '1016') { 
-                isUnlocked = true; updateLockUI(); window.closePwdModal(); processAndRender(); 
-            } else { 
-                // 替換 Alert 為 UI 提示
-                const oldVal = pwdInput.value;
-                pwdInput.value = '';
-                pwdInput.placeholder = '密碼錯誤，請重試';
-                pwdInput.classList.add('border-red-500', 'placeholder-red-400', 'text-red-500');
-                setTimeout(() => {
-                    pwdInput.placeholder = '請輸入驗證';
-                    pwdInput.classList.remove('border-red-500', 'placeholder-red-400', 'text-red-500');
-                }, 2000);
-            } 
-        };
-        document.getElementById('verifyBtn').onclick = window.verifyPwd;
+        document.getElementById('adminToggle').onclick = () => {
+            isAdmin = !isAdmin; const body = document.body; const icon = document.getElementById('adminIcon');
+            if (isAdmin) { body.classList.add('is-admin-view'); icon.setAttribute('data-lucide', 'eye'); }
+            else { body.classList.remove('is-admin-view'); icon.setAttribute('data-lucide', 'eye-off'); }
+            lucide.createIcons();
+            const prevF = document.getElementById('prevFundBlock'); if(prevF) prevF.style.display = isAdmin ? 'block' : 'none';
+            processAndRender();
+        };
 
-        window.toggleVerify = async (id, s) => { if (isUnlocked) await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'sales_log', id), { verified: s }); };
+        document.getElementById('salesForm').onsubmit = async (e) => {
+            e.preventDefault(); const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
+            const p = PRODUCTS.find(x => x.id === pId), btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerHTML = `傳送中...`;
+            try { 
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { emp: document.getElementById('employee').value, date: document.getElementById('date').value, prodId: pId, prodName: p.name, qty: qty, bonus: p.bonus * qty, fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false }); 
+                window.openSuccessModal(); 
+                document.getElementById('product').value = ""; 
+                document.getElementById('calcPreview').classList.add('hidden'); 
+            } catch (err) { alert("傳送失敗"); } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
+        };
 
-        window.switchTab = (tab) => {
-            const r = document.getElementById('reportView'), s = document.getElementById('statsView');
-            const br = document.getElementById('btnReport'), bs = document.getElementById('btnStats');
-            if (tab === 'report') { r.classList.remove('hidden'); s.classList.add('hidden'); br.classList.add('tab-active'); br.classList.remove('text-slate-400'); bs.classList.remove('tab-active'); bs.classList.add('text-slate-400'); }
-            else { r.classList.add('hidden'); s.classList.remove('hidden'); bs.classList.add('tab-active'); bs.classList.remove('text-slate-400'); br.classList.remove('tab-active'); br.classList.add('text-slate-400'); processAndRender(); }
-        };
+        document.getElementById('product').onchange = () => {
+            const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value), p = PRODUCTS.find(x => x.id === pId);
+            if (p) { document.getElementById('calcPreview').classList.remove('hidden'); document.getElementById('prevBonus').textContent = `$${(p.bonus * qty).toLocaleString()}`; document.getElementById('prevFund').textContent = `$${(p.fund * qty).toLocaleString()}`; }
+            else { document.getElementById('calcPreview').classList.add('hidden'); }
+        };
+        document.getElementById('quantity').onchange = document.getElementById('product').onchange;
+        document.getElementById('filterStart').onchange = processAndRender;
+        document.getElementById('filterEnd').onchange = processAndRender;
 
-        function updateLockUI() {
-            const icon = document.getElementById('lockIcon'), label = document.getElementById('authStatusLabel');
-            const empSec = document.getElementById('adminEmpSection');
-            if (isUnlocked) { 
-                icon.setAttribute('data-lucide', 'unlock'); icon.classList.replace('lock-locked', 'lock-unlocked'); label.textContent = "驗證授權通過"; label.classList.replace('text-red-500', 'text-green-600'); 
-                if(empSec) empSec.classList.remove('hidden');
-            } else { 
-                icon.setAttribute('data-lucide', 'lock'); icon.classList.replace('lock-unlocked', 'lock-locked'); label.textContent = "核銷需要權限"; label.classList.replace('text-green-600', 'text-red-500'); 
-                if(empSec) empSec.classList.add('hidden');
-            }
-            lucide.createIcons();
-        }
-
-        document.getElementById('authBtn').onclick = () => { if (isUnlocked) { isUnlocked = false; updateLockUI(); processAndRender(); } else { document.getElementById('pwdModal').classList.remove('hidden'); document.getElementById('pwdInput').focus(); } };
-
-        document.getElementById('adminToggle').onclick = () => {
-            isAdmin = !isAdmin; const body = document.body; const icon = document.getElementById('adminIcon');
-            if (isAdmin) { body.classList.add('is-admin-view'); icon.setAttribute('data-lucide', 'eye'); }
-            else { body.classList.remove('is-admin-view'); icon.setAttribute('data-lucide', 'eye-off'); }
-            lucide.createIcons();
-            const prevF = document.getElementById('prevFundBlock'); if(prevF) prevF.style.display = isAdmin ? 'block' : 'none';
-            processAndRender();
-        };
-        
-        // --- 新增人員功能 ---
-        window.addEmployee = async () => {
-            const input = document.getElementById('newEmpName');
-            const btn = document.getElementById('addEmpBtn');
-            const name = input.value.trim();
-            if(!name) return;
-            
-            btn.disabled = true;
-            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>`;
-            lucide.createIcons();
-            
-            try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'employees'), { name, ts: Date.now() });
-                input.value = '';
-                btn.innerHTML = `新增`;
-            } catch(e) {
-                btn.innerHTML = `失敗`;
-                btn.classList.replace('bg-indigo-600', 'bg-red-500');
-                setTimeout(() => {
-                    btn.innerHTML = `新增`;
-                    btn.classList.replace('bg-red-500', 'bg-indigo-600');
-                }, 2000);
-            } finally {
-                btn.disabled = false;
-            }
-        };
-
-        // --- 刪除人員功能 (使用防呆狀態取代 confirm) ---
-        window.confirmDeleteEmployee = async (btn, id) => {
-            if(btn.dataset.confirm === "yes") {
-                // 執行刪除
-                try {
-                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'employees', id));
-                } catch(e) { console.error("Delete failed"); }
-            } else {
-                // 變更為確認狀態
-                const oldHTML = btn.innerHTML;
-                btn.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3"></i> 確定?`;
-                btn.classList.add('bg-red-500', 'text-white', 'px-2');
-                btn.classList.remove('bg-slate-200', 'text-slate-500');
-                btn.dataset.confirm = "yes";
-                lucide.createIcons();
-                
-                // 3秒後恢復原狀
-                setTimeout(() => {
-                    if(btn && btn.dataset) {
-                        btn.dataset.confirm = "no";
-                        btn.innerHTML = oldHTML;
-                        btn.classList.remove('bg-red-500', 'text-white', 'px-2');
-                        btn.classList.add('bg-slate-200', 'text-slate-500');
-                        lucide.createIcons();
-                    }
-                }, 3000);
-            }
-        };
-
-        document.getElementById('salesForm').onsubmit = async (e) => {
-            e.preventDefault(); const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value);
-            const p = PRODUCTS.find(x => x.id === pId), btn = document.getElementById('submitBtn');
-            btn.disabled = true; btn.innerHTML = `傳送中...`;
-            try { 
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'sales_log'), { emp: document.getElementById('employee').value, date: document.getElementById('date').value, prodId: pId, prodName: p.name, qty: qty, bonus: p.bonus * qty, fund: p.fund * qty, ts: Date.now(), verified: false, deleted: false }); 
-                window.openSuccessModal(); 
-                document.getElementById('product').value = ""; 
-                document.getElementById('calcPreview').classList.add('hidden'); 
-            } catch (err) { 
-                // 替換 Alert 為 UI 提示
-                btn.innerHTML = `傳送失敗，請重試`;
-                btn.classList.replace('bg-blue-600', 'bg-red-500');
-                setTimeout(() => {
-                    btn.innerHTML = `確認提交申報`;
-                    btn.classList.replace('bg-red-500', 'bg-blue-600');
-                    btn.disabled = false;
-                }, 3000);
-                return;
-            } finally { btn.disabled = false; btn.innerHTML = `確認提交申報`; lucide.createIcons(); }
-        };
-
-        document.getElementById('product').onchange = () => {
-            const pId = parseInt(document.getElementById('product').value), qty = parseInt(document.getElementById('quantity').value), p = PRODUCTS.find(x => x.id === pId);
-            if (p) { document.getElementById('calcPreview').classList.remove('hidden'); document.getElementById('prevBonus').textContent = `$${(p.bonus * qty).toLocaleString()}`; document.getElementById('prevFund').textContent = `$${(p.fund * qty).toLocaleString()}`; }
-            else { document.getElementById('calcPreview').classList.add('hidden'); }
-        };
-        document.getElementById('quantity').onchange = document.getElementById('product').onchange;
-        document.getElementById('filterStart').onchange = processAndRender;
-        document.getElementById('filterEnd').onchange = processAndRender;
-
-        initForm();
-        startApp();
-    </script>
+        initForm();
+        startApp();
+    </script>
 </body>
 </html>
