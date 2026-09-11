@@ -189,7 +189,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
         const config = {
@@ -220,10 +220,13 @@
 
         let EMPLOYEES = []; // 改為動態陣列
 
-        const app = initializeApp(config);
+        // 確保在協作環境中使用系統提供的設定，以獲得正確的存取權限
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : config;
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'sales-v3-final';
+
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'sales-v3-final';
 
         let isAdmin = false, isUnlocked = false, rawData = [], posChart = null, unsubscribe = null, unsubscribeEmp = null;
 
@@ -246,7 +249,12 @@
                 }
             });
             try {
-                await signInAnonymously(auth);
+                // 加入環境 token 驗證，解決連線被拒絕的問題
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
             } catch (error) {
                 console.error("授權登入失敗:", error);
                 document.getElementById('employee').innerHTML = '<option value="">(系統錯誤) 無法驗證身份</option>';
