@@ -239,13 +239,18 @@
         };
 
         const startApp = async () => {
-            await signInAnonymously(auth);
             onAuthStateChanged(auth, (user) => { 
                 if (user) {
                     loadEmployees();
                     loadData();
                 }
             });
+            try {
+                await signInAnonymously(auth);
+            } catch (error) {
+                console.error("授權登入失敗:", error);
+                document.getElementById('employee').innerHTML = '<option value="">(系統錯誤) 無法驗證身份</option>';
+            }
         };
 
         const loadEmployees = () => {
@@ -253,16 +258,21 @@
             if (unsubscribeEmp) unsubscribeEmp();
             
             unsubscribeEmp = onSnapshot(empQuery, (sn) => {
+                let empsData = sn.docs.map(d => ({id: d.id, name: d.data().name})).sort((a,b) => (a.ts || 0) - (b.ts || 0));
+                
                 // 初次載入時自動寫入預設名單(如為空)
                 if (sn.empty && EMPLOYEES.length === 0) {
                     const defaultEmps = ['莊秉豐', '高鈺雯', '栢政權', '黃郁心', '賴彥廷', '黃詩涵', '紀懿芯', '施孟均'];
+                    
+                    // 先在本地端將畫面填補上，避免卡住
+                    empsData = defaultEmps.map((name, idx) => ({ id: 'temp-'+idx, name }));
+                    
+                    // 背景嘗試寫入資料庫
                     defaultEmps.forEach(name => {
-                        addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'employees'), { name, ts: Date.now() });
+                        try { addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'employees'), { name, ts: Date.now() }); } catch(e) { }
                     });
-                    return;
                 }
 
-                const empsData = sn.docs.map(d => ({id: d.id, name: d.data().name})).sort((a,b) => a.ts - b.ts);
                 EMPLOYEES = empsData.map(e => e.name);
 
                 // 更新下拉選單
@@ -289,6 +299,9 @@
                 }
 
                 if (!document.getElementById('statsView').classList.contains('hidden')) processAndRender();
+            }, (error) => {
+                console.error("讀取名單失敗:", error);
+                document.getElementById('employee').innerHTML = '<option value="">連線異常，請重新整理</option>';
             });
         };
 
